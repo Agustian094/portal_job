@@ -1,0 +1,163 @@
+---
+import MainLayout from "../../layouts/mainlayout.astro";
+import { getJobs } from "../../services/jobService";
+import type { GetStaticPaths } from "astro";
+import {
+  MapPin,
+  Briefcase,
+  Clock,
+  DollarSign,
+  Laptop,
+  Send,
+} from "lucide-astro";
+
+interface JobEntry {
+  _id: string;
+  title: string;
+  slug: string;
+  summary: string;
+  description: string;
+  requirement: string;
+}
+
+export async function getStaticPaths() {
+  try {
+    const response = await getJobs();
+    const jobs: JobEntry[] = response?.entries ?? [];
+
+    if (!jobs || jobs.length === 0) {
+      console.warn("No jobs found for static path generation");
+      return [];
+    }
+
+    return jobs.map((job: JobEntry) => ({
+      params: { id: String(job._id) },
+      props: { job },
+    }));
+  } catch (err) {
+    console.error("Error in getStaticPaths:", err);
+    return [];
+  }
+}
+
+const { id } = Astro.params;
+const job = (Astro.props as { job?: JobEntry }).job;
+
+if (!job) {
+  throw new Error(`Job dengan ID ${id} tidak ditemukan`);
+}
+
+const currentJob = job;
+---
+
+<MainLayout title="Job Detail">
+  <!-- ================= HEADER (BIRU) ================= -->
+  <section class="bg-gradient-to-r from-blue-500 to-blue-400 h-[220px]">
+  </section>
+
+  <!-- ================= CARD (OVERLAP) ================= -->
+  <div class="w-[90%] mx-auto -mt-20 relative z-10">
+    <div
+      class="bg-white rounded-3xl p-6 shadow-xl flex flex-col md:flex-row md:items-center md:justify-between gap-6"
+    >
+      <!-- LEFT -->
+      <div class="flex items-start gap-4">
+        <!-- LOGO -->
+        <img
+          src="/images/logoTTG.png"
+          alt="Company Logo"
+          class="w-15 h-15 rounded-full object-cover border border-gray-200"
+        />
+
+        <!-- TEXT -->
+        <div class="space-y-2">
+          <!-- Title -->
+          <h1 class="text-2xl md:text-3xl font-bold text-gray-800">
+            {currentJob.title}
+          </h1>
+
+          <!-- Meta Info -->
+          <div class="flex flex-wrap gap-4 text-sm text-gray-500">
+            <div class="flex items-center gap-2">
+              <Briefcase class="w-4 h-4" />
+              <span>Tim Teknologi</span>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <MapPin class="w-4 h-4" />
+              <span>Surabaya</span>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <Clock class="w-4 h-4" />
+              <span>{currentJob.slug}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- RIGHT BUTTON -->
+      <a
+        href={`/apply/${id}`}
+        class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-xl transition flex items-center gap-2"
+      >
+        <Send class="text-white w-4 h-4" />
+        <span>Apply Now </span>
+      </a>
+    </div>
+  </div>
+
+  <!-- ================= CONTENT ================= -->
+  <section class="bg-white py-12">
+    <div class="w-[90%] mx-auto space-y-6">
+      <!-- ===== SALARY / INFO CARD ===== -->
+      <div class="bg-white p-6 rounded-2xl shadow-md grid md:grid-cols-2 gap-6">
+        <!-- Salary -->
+        <div class="flex items-center gap-4">
+          <div class="bg-green-100 p-3 rounded-lg">
+            <DollarSign class="text-green-600 w-5 h-5" />
+          </div>
+          <div>
+            <p class="text-sm text-gray-500">Salary</p>
+            <p class="font-semibold text-gray-800">Negotiable</p>
+          </div>
+        </div>
+
+        <!-- Work Type -->
+        <div class="flex items-center gap-4">
+          <div class="bg-purple-100 p-3 rounded-lg">
+            <Laptop class="text-purple-600 w-5 h-5" />
+          </div>
+          <div>
+            <p class="text-sm text-gray-500">Work Type</p>
+            <p class="font-semibold text-gray-800">
+              {currentJob.slug}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== DESCRIPTION + REQUIREMENTS ===== -->
+      <div class="bg-white p-6 rounded-2xl shadow-md">
+        <!-- Title -->
+        <h2 class="font-semibold text-lg mb-4 text-gray-800">
+          Job Description
+        </h2>
+
+        <!-- Description -->
+        <p class="text-gray-600 leading-relaxed">
+          {currentJob.description}
+        </p>
+
+        <div class="mt-6"></div>
+
+        <!-- Sub Title -->
+        <h2 class="font-semibold text-gray-800 mb-3">Requirements:</h2>
+
+        <!-- Requirement List -->
+        <ul class="list-disc list-inside text-gray-600 space-y-2">
+          {currentJob.requirement.split(",").map((item) => <li>{item}</li>)}
+        </ul>
+      </div>
+    </div>
+  </section>
+</MainLayout>

@@ -1,0 +1,39 @@
+---
+import { Search } from "lucide-astro";
+---
+
+<section
+  class="w-full flex flex-col items-center text-center pt-20 pb-10 px-4 bg-gradient-to-r from-blue-500 to-blue-400"
+>
+  <!-- Title -->
+  <h1 class="text-white text-4xl md:text-5xl font-bold">
+    Find Your Dream Job Today!
+  </h1>
+
+  <!-- Subtitle -->
+  <p class="text-white/80 mt-4 max-w-xl">
+    connecting Talent with Opportunity: Your Gateway to Career Success
+  </p>
+
+  <!-- Search Bar -->
+  <div
+    class="mt-8 w-full max-w-2xl bg-white rounded-xl shadow-lg flex items-center px-4 py-3 gap-3"
+  >
+    <!-- Icon -->
+    <Search class="w-6 h-6 text-gray-400" />
+
+    <!-- Input -->
+    <input
+      type="text"
+      placeholder="Search"
+      class="flex-1 outline-none text-gray-700"
+    />
+
+    <!-- Button -->
+    <button
+      class="bg-blue-500 text-white px-5 py-2 rounded-lg hover:bg-blue-600 transition"
+    >
+      Search Job
+    </button>
+  </div>
+</section>

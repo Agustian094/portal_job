@@ -1,0 +1,111 @@
+---
+import Layout from "../layouts/mainlayout.astro";
+---
+
+<Layout title="Company">
+  <!-- HERO -->
+  <section
+    class="w-full text-center py-20 px-4 bg-gradient-to-r from-blue-500 to-blue-400"
+  >
+    <h1 class="text-white text-4xl md:text-5xl font-bold">
+      About Tim Teknologi
+    </h1>
+
+    <p class="text-white/80 mt-4 max-w-xl mx-auto">
+      Connecting talented developers with innovative companies across the globe
+    </p>
+  </section>
+
+  <!-- OUR STORY -->
+  <section class="bg-gray-100 py-16">
+    <div class="w-[90%] mx-auto grid md:grid-cols-2 gap-10 items-center">
+      <!-- Text -->
+      <div>
+        <h2 class="text-3xl font-bold text-gray-800 mb-4">Our Story</h2>
+
+        <p class="text-gray-600 mb-4 leading-relaxed">
+          Lorem ipsum dolor sit amet consectetur. Nibh est ullamcorper leo
+          interdum. Justo eu arcu vitae nascetur.
+        </p>
+
+        <p class="text-gray-600 leading-relaxed">
+          Risus ullamcorper risus nunc aliquet aliquet mi. Pretium in viverra
+          lacus dignissim non at congue amet.
+        </p>
+      </div>
+
+      <!-- Image -->
+      <div>
+        <img
+          src="/images/company.png"
+          alt="Company"
+          class="rounded-2xl shadow-md w-full"
+        />
+      </div>
+    </div>
+  </section>
+
+  <!-- TEAM -->
+  <section class="bg-gray-100 py-16 text-center">
+    <h2 class="text-3xl font-bold text-gray-800">Meet Our Team</h2>
+
+    <p class="text-gray-500 mt-2 max-w-xl mx-auto">
+      A diverse group of passionate professionals dedicated to revolutionizing
+      tech recruitment.
+    </p>
+
+    <!-- TEAM GRID -->
+    <div
+      class="w-[90%] mx-auto mt-10 grid sm:grid-cols-2 md:grid-cols-4 gap-10"
+    >
+      <!-- Member -->
+      <div>
+        <img
+          src="/images/team1.jpg"
+          class="w-24 h-24 mx-auto rounded-full object-cover"
+        />
+        <h3 class="mt-4 font-semibold text-gray-800">Alex Chen</h3>
+        <p class="text-blue-500 text-sm">CEO & Founder</p>
+        <p class="text-gray-500 text-sm mt-2">
+          Former Google engineer with 10+ years in tech recruitment
+        </p>
+      </div>
+
+      <div>
+        <img
+          src="/images/team2.jpg"
+          class="w-24 h-24 mx-auto rounded-full object-cover"
+        />
+        <h3 class="mt-4 font-semibold text-gray-800">Sarah Johnson</h3>
+        <p class="text-blue-500 text-sm">CTO</p>
+        <p class="text-gray-500 text-sm mt-2">
+          Full-stack developer and AI specialist
+        </p>
+      </div>
+
+      <div>
+        <img
+          src="/images/team3.jpg"
+          class="w-24 h-24 mx-auto rounded-full object-cover"
+        />
+        <h3 class="mt-4 font-semibold text-gray-800">David Rodriguez</h3>
+        <p class="text-blue-500 text-sm">Head of Product</p>
+        <p class="text-gray-500 text-sm mt-2">
+          Product strategist with experience at Uber & Airbnb
+        </p>
+      </div>
+
+      <div>
+        <img
+          src="/images/team4.jpg"
+          class="w-24 h-24 mx-auto rounded-full object-cover"
+        />
+        <h3 class="mt-4 font-semibold text-gray-800">Emma Wilson</h3>
+        <p class="text-blue-500 text-sm">Head of Design</p>
+        <p class="text-gray-500 text-sm mt-2">
+          UX designer passionate about intuitive experiences
+        </p>
+      </div>
+    </div>
+  </section>
+</Layout>

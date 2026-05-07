@@ -1,0 +1,68 @@
+---
+import { Briefcase, Clock, MapPin } from "lucide-astro";
+
+const { id, title, slug, summary, description } = Astro.props;
+---
+
+<!-- CARD CONTAINER -->
+<article
+  class="w-full bg-white rounded-xl shadow-md px-6 py-4 flex items-center justify-between transition hover:shadow-lg"
+>
+  <!-- LEFT SECTION -->
+  <div class="flex items-center gap-5">
+
+    <!-- LOGO / ICON PLACEHOLDER -->
+    <div>
+      <img
+        src="/images/logoTTG.png"
+        alt="Company Logo"
+        class="w-10 h-10 rounded-full object-cover"
+      />
+    </div>
+
+    <!-- TEXT CONTENT -->
+    <div class="space-y-1">
+
+      <!-- JOB TITLE -->
+      <h2 class="text-lg font-semibold text-gray-800">
+        {title || "No Title"}
+      </h2>
+
+      <!-- description -->
+      <p class="text-sm text-gray-500">
+        {description || "No description available"}
+      </p>
+
+      <!-- META INFO -->
+      <div class="flex flex-wrap gap-4 text-sm text-gray-500 mt-1">
+
+        <!-- summary -->
+        <span class="flex items-center gap-1">
+          <Briefcase class="w-4 h-4" />
+          {summary || "No summary available"}
+        </span>
+
+        <!-- TYPE (pakai slug sebagai pengganti) -->
+        <span class="flex items-center gap-1">
+          <Clock class="w-4 h-4" />
+          {slug || "No type"}
+        </span>
+
+        <!-- LOCATION (dummy karena tidak ada field) -->
+        <span class="flex items-center gap-1">
+          <MapPin class="w-4 h-4" />
+          surabaya
+        </span>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT SECTION -->
+ <a
+    href={`/jobdetail/${id}`}
+    class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-600"
+  >
+    Job Detail
+  </a>
+</article>

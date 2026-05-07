@@ -1,0 +1,82 @@
+---
+import {
+  MapPin,
+  Phone,
+  Mail,
+  Linkedin,
+  Twitter,
+  Instagram,
+  Briefcase,
+} from "lucide-astro";
+---
+
+<footer class="bg-[#0f172a] text-gray-300 mt-20">
+  <div class="w-[90%] mx-auto py-12 grid md:grid-cols-4 gap-8">
+    <!-- LEFT: Logo & Desc -->
+    <div>
+      <h2 class="text-white font-semibold text-lg flex items-center gap-2">
+        <Briefcase class="w-6 h-6" />
+        Job Portal
+      </h2>
+
+      <p class="mt-4 text-sm text-gray-400">
+        Global Technology Team is an outsourcing company specializing in design
+        and technology services. With a primary focus on innovation, and
+        quality.
+      </p>
+
+      <!-- Social -->
+      <div class="flex gap-4 mt-4">
+        <Linkedin class="w-5 h-5 hover:text-white cursor-pointer" />
+        <Twitter class="w-5 h-5 hover:text-white cursor-pointer" />
+        <Instagram class="w-5 h-5 hover:text-white cursor-pointer" />
+      </div>
+    </div>
+
+    <!-- Company -->
+    <div>
+      <h3 class="text-white font-semibold mb-3">Company</h3>
+      <ul class="space-y-2 text-sm">
+        <li><a href="#" class="hover:text-white">About Us</a></li>
+        <li><a href="#" class="hover:text-white">Our Team</a></li>
+        <li><a href="#" class="hover:text-white">Careers</a></li>
+      </ul>
+    </div>
+
+    <!-- Support -->
+    <div>
+      <h3 class="text-white font-semibold mb-3">Support</h3>
+      <ul class="space-y-2 text-sm">
+        <li><a href="#" class="hover:text-white">Help Center</a></li>
+        <li><a href="#" class="hover:text-white">Contact</a></li>
+        <li><a href="#" class="hover:text-white">Terms of Service</a></li>
+      </ul>
+    </div>
+
+    <!-- Contact -->
+    <div>
+      <h3 class="text-white font-semibold mb-3">Contact</h3>
+      <ul class="space-y-3 text-sm">
+        <li class="flex items-center gap-2">
+          <MapPin class="w-4 h-4" />
+          Surabaya, Indonesia
+        </li>
+
+        <li class="flex items-center gap-2">
+          <Phone class="w-4 h-4" />
+          +62 81 1234 5678
+        </li>
+
+        <li class="flex items-center gap-2">
+          <Mail class="w-4 h-4" />
+          Jobportal@example.com
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Bottom -->
+  <div class="border-t border-gray-700 text-center py-4 text-sm text-gray-400">
+    2026 Job Portal. All rights reserved.
+  </div>
+</footer>
