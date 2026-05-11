@@ -1,0 +1,422 @@
+---
+import MainLayout from "../../layouts/mainlayout.astro";
+import { ClipboardList, SendHorizonal } from "lucide-astro";
+import { getQuestionsByJob } from "../../services/questionService";
+import { getJobs } from "../../services/jobService";
+
+// Generate static paths for all job postings
+export async function getStaticPaths() {
+  try {
+    const response = await getJobs();
+    const jobs = response?.entries ?? [];
+
+    if (!jobs || jobs.length === 0) {
+      console.warn("No jobs found for question static path generation");
+      return [];
+    }
+
+    return jobs.map((job: any) => ({
+      params: { id: String(job._id) },
+    }));
+  } catch (err) {
+    console.error("Error in getStaticPaths (question):", err);
+    return [];
+  }
+}
+
+const { id } = Astro.params;
+
+// load questions for job posting (server-side)
+const resp = await getQuestionsByJob(id);
+const questions: any[] = (resp && resp.entries) || [];
+
+// @ts-ignore - Astro component parameter typing
+function parseOptions(optString: string | undefined): string[] {
+  if (!optString) return [];
+  return String(optString)
+    .split(/,|\n/) // split by comma or newline
+    .map((s: string) => s.trim())
+    .filter(Boolean);
+}
+---
+
+<MainLayout title="Question Form">
+  <!-- ================= HERO ================= -->
+  <section class="bg-gradient-to-r from-blue-500 to-blue-400 py-14">
+    <div class="w-[90%] max-w-6xl mx-auto text-white">
+      <div class="flex items-center gap-3 mb-3">
+        <div class="bg-white/20 p-3 rounded-xl backdrop-blur-sm">
+          <ClipboardList size={24} />
+        </div>
+
+        <div>
+          <p class="text-sm opacity-90">Assessment Form</p>
+          <h1 class="text-3xl font-bold">Candidate Questions</h1>
+        </div>
+      </div>
+
+      <p class="text-sm text-blue-100 max-w-2xl leading-relaxed">
+        Please answer all questions carefully before submitting your
+        application.
+      </p>
+    </div>
+  </section>
+
+  <!-- ================= FORM SECTION ================= -->
+  <section class="bg-[#f5f7fb] py-12 min-h-screen">
+    <div class="w-[90%] max-w-6xl mx-auto space-y-6">
+      <form id="questionForm" class="space-y-6">
+        <script
+          id="questions-data"
+          type="application/json"
+          set:html={JSON.stringify(questions)}
+        />
+
+        <!-- application_id is passed from apply page and stored in hidden input -->
+        <input id="application_id_input" name="application_id" type="hidden" />
+
+        <!-- QUESTIONS (dynamic) -->
+        {
+          // @ts-ignore - Astro component parameter typing
+          questions.map((q: any) => {
+            const type = String(q.question_type || "").toLowerCase();
+            const opts = parseOptions(q.options || "");
+
+            // Check SHORT TEXT first
+            if (
+              type.includes("short") ||
+              (type.includes("text") && !type.includes("long"))
+            ) {
+              return (
+                <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition">
+                  <h2 class="text-2xl font-semibold text-slate-800 mb-5">
+                    {q.question}
+                  </h2>
+                  <input
+                    type="text"
+                    name={`q_${q._id}`}
+                    placeholder="Jawaban Anda"
+                    class="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-slate-700 placeholder:text-slate-400 outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition"
+                  />
+                </div>
+              );
+            }
+
+            // Check LONG TEXT
+            if (type.includes("long")) {
+              return (
+                <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition">
+                  <h2 class="text-2xl font-semibold text-slate-800 mb-5">
+                    {q.question}
+                  </h2>
+                  <textarea
+                    name={`q_${q._id}`}
+                    rows="5"
+                    placeholder="Jawaban Anda"
+                    class="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-slate-700 placeholder:text-slate-400 outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition resize-none"
+                  />
+                </div>
+              );
+            }
+
+            // Check MULTI first before SINGLE to avoid conflict
+            if (type.includes("multi")) {
+              return (
+                <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition">
+                  <h2 class="text-2xl font-semibold text-slate-800 mb-6">
+                    {q.question}
+                    <span class="text-sm text-gray-500 ml-2">
+                      (Select multiple)
+                    </span>
+                  </h2>
+                  <div class="space-y-4">
+                    {opts.map((option: string) => (
+                      <label class="flex items-center gap-3 cursor-pointer group">
+                        <input
+                          type="checkbox"
+                          name={`q_${q._id}[]`}
+                          value={option}
+                          class="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                        />
+                        <span class="text-slate-700 group-hover:text-blue-600 transition cursor-pointer">
+                          {option}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              );
+            }
+
+            if (
+              type.includes("single") ||
+              (type.includes("select") && !type.includes("multi"))
+            ) {
+              return (
+                <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition">
+                  <h2 class="text-2xl font-semibold text-slate-800 mb-6">
+                    {q.question}
+                  </h2>
+                  <div class="space-y-4">
+                    {opts.map((option: string) => (
+                      <label class="flex items-center gap-3 cursor-pointer group">
+                        <input
+                          type="radio"
+                          name={`q_${q._id}`}
+                          value={option}
+                          class="w-5 h-5 border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                        />
+                        <span class="text-slate-700 group-hover:text-blue-600 transition cursor-pointer">
+                          {option}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              );
+            }
+
+            // fallback: render as short text
+            return (
+              <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition">
+                <h2 class="text-2xl font-semibold text-slate-800 mb-5">
+                  {q.question}
+                </h2>
+                <input
+                  type="text"
+                  name={`q_${q._id}`}
+                  placeholder="Jawaban Anda"
+                  class="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-slate-700 placeholder:text-slate-400 outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition"
+                />
+              </div>
+            );
+          })
+        }
+
+        <!-- BUTTON -->
+        <div class="pt-2">
+          <button
+            type="submit"
+            class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] transition text-white font-medium px-7 py-3 rounded-xl shadow-lg shadow-blue-200"
+          >
+            <SendHorizonal size={18} />
+            Send
+          </button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <script type="module">
+    // Client script to collect answers and POST to /api/submit-answers
+    const initQuestionForm = () => {
+      const qDataEl = document.getElementById("questions-data");
+      const questions = qDataEl ? JSON.parse(qDataEl.textContent || "[]") : [];
+      const form = document.getElementById("questionForm");
+      const appIdInput = document.getElementById("application_id_input");
+
+      // try auto-fill application_id from query param
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const aid =
+          params.get("application_id") ||
+          params.get("applicationId") ||
+          params.get("application");
+        if (aid && appIdInput) {
+          appIdInput.value = aid;
+          localStorage.setItem("last_application_id", aid);
+        } else if (appIdInput) {
+          const savedAid = localStorage.getItem("last_application_id") || "";
+          if (savedAid) appIdInput.value = savedAid;
+        }
+      } catch (e) {
+        // ignore
+      }
+
+      if (!form) {
+        console.error("questionForm not found");
+        return;
+      }
+
+      form.addEventListener("submit", async (ev) => {
+        ev.preventDefault();
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) submitBtn.disabled = true;
+
+        const applicationId = appIdInput ? appIdInput.value.trim() : "";
+        if (!applicationId) {
+          alert(
+            "Application ID tidak ditemukan. Silakan submit ulang dari halaman Apply.",
+          );
+          if (submitBtn) submitBtn.disabled = false;
+          return;
+        }
+
+        const answers = [];
+        const validationErrors = [];
+        let firstInvalidElement = null;
+
+        const clearValidity = (selector) => {
+          const fields = Array.from(document.querySelectorAll(selector));
+          fields.forEach((el) => {
+            if (typeof el.setCustomValidity === "function") {
+              el.setCustomValidity("");
+            }
+          });
+        };
+
+        for (const q of questions) {
+          const qid = String(q._id || "");
+          const qname = String(q.question || "");
+          const type = String(q.question_type || "").toLowerCase();
+
+          let value = "";
+
+          if (type.includes("multi")) {
+            const nodes = Array.from(
+              document.querySelectorAll(`[name="q_${qid}[]"]:checked`),
+            );
+            const vals = nodes.map((n) => n.value);
+            value = vals.join(", ");
+
+            clearValidity(`[name="q_${qid}[]"]`);
+            if (vals.length === 0) {
+              validationErrors.push(`- ${qname}`);
+              const firstCheckbox = document.querySelector(
+                `[name="q_${qid}[]"]`,
+              );
+              if (
+                firstCheckbox &&
+                typeof firstCheckbox.setCustomValidity === "function"
+              ) {
+                firstCheckbox.setCustomValidity("Pertanyaan ini wajib diisi");
+              }
+              if (!firstInvalidElement && firstCheckbox) {
+                firstInvalidElement = firstCheckbox;
+              }
+            }
+          } else if (
+            type.includes("single") ||
+            (type.includes("select") && !type.includes("multi"))
+          ) {
+            const el = document.querySelector(`[name="q_${qid}"]:checked`);
+            value = el ? el.value : "";
+
+            clearValidity(`[name="q_${qid}"]`);
+            if (!value) {
+              validationErrors.push(`- ${qname}`);
+              const firstRadio = document.querySelector(`[name="q_${qid}"]`);
+              if (
+                firstRadio &&
+                typeof firstRadio.setCustomValidity === "function"
+              ) {
+                firstRadio.setCustomValidity("Pertanyaan ini wajib diisi");
+              }
+              if (!firstInvalidElement && firstRadio) {
+                firstInvalidElement = firstRadio;
+              }
+            }
+          } else if (type.includes("long")) {
+            const ta = document.querySelector(`[name="q_${qid}"]`);
+            value = ta ? String(ta.value || "").trim() : "";
+            if (ta && typeof ta.setCustomValidity === "function") {
+              ta.setCustomValidity("");
+            }
+            if (!value) {
+              validationErrors.push(`- ${qname}`);
+              if (ta && typeof ta.setCustomValidity === "function") {
+                ta.setCustomValidity("Pertanyaan ini wajib diisi");
+              }
+              if (!firstInvalidElement) firstInvalidElement = ta;
+            }
+          } else {
+            const inp = document.querySelector(`[name="q_${qid}"]`);
+            value = inp ? String(inp.value || "").trim() : "";
+            if (inp && typeof inp.setCustomValidity === "function") {
+              inp.setCustomValidity("");
+            }
+            if (!value) {
+              validationErrors.push(`- ${qname}`);
+              if (inp && typeof inp.setCustomValidity === "function") {
+                inp.setCustomValidity("Pertanyaan ini wajib diisi");
+              }
+              if (!firstInvalidElement) firstInvalidElement = inp;
+            }
+          }
+
+          answers.push({
+            question_id: qid,
+            question_name: qname,
+            answer_value: value,
+          });
+        }
+
+        if (validationErrors.length > 0) {
+          if (
+            firstInvalidElement &&
+            typeof firstInvalidElement.focus === "function"
+          ) {
+            firstInvalidElement.focus();
+            if (typeof firstInvalidElement.reportValidity === "function") {
+              firstInvalidElement.reportValidity();
+            }
+            if (typeof firstInvalidElement.scrollIntoView === "function") {
+              firstInvalidElement.scrollIntoView({
+                behavior: "smooth",
+                block: "center",
+              });
+            }
+          }
+          alert(
+            "Semua pertanyaan wajib diisi. Pertanyaan yang belum dijawab:\n" +
+              validationErrors.join("\n"),
+          );
+          if (submitBtn) submitBtn.disabled = false;
+          return;
+        }
+
+        try {
+          const resp = await fetch("/api/submit-answers", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ application_id: applicationId, answers }),
+          });
+
+          const json = await resp.json();
+          console.log("[submit-answers] server response", resp.status, json);
+
+          if (resp.ok && json.ok) {
+            alert("Answers submitted successfully");
+            // optional: redirect or show success UI
+          } else {
+            // if some entries failed, show details
+            const details = json && json.results ? json.results : json;
+            console.error("submit-answers failure details:", details);
+            let msg = "Failed to save answers.";
+            if (Array.isArray(details)) {
+              const failed = details.filter((r) => !r.ok);
+              msg += ` ${failed.length} entries failed.`;
+              msg += "\nCheck console for details.";
+            } else if (json && json.error) {
+              msg += "\n" + json.error;
+            }
+            alert(msg);
+          }
+        } catch (err) {
+          console.error(err);
+          alert("Error submitting answers: " + (err.message || err));
+        } finally {
+          if (submitBtn) submitBtn.disabled = false;
+        }
+      });
+    };
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", initQuestionForm, {
+        once: true,
+      });
+    } else {
+      initQuestionForm();
+    }
+  </script>
+</MainLayout>

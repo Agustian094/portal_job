@@ -1,0 +1,181 @@
+---
+import MainLayout from "../layouts/mainlayout.astro";
+import {
+  Check,
+  BriefcaseBusiness,
+  MapPin,
+  TriangleAlert,
+  Info,
+  Copy,
+} from "lucide-astro";
+
+const trackingLink = "jobconnect.com/track/app-123-xyz";
+---
+
+<MainLayout title="Application Success">
+  <!-- ================= HERO ================= -->
+  <section class="bg-gradient-to-r from-blue-500 to-blue-400 h-[90px]">
+  </section>
+
+  <!-- ================= CONTENT ================= -->
+  <section class="bg-[#f5f7fb] min-h-screen py-16">
+    <div class="w-[90%] max-w-xl mx-auto text-center">
+      <!-- SUCCESS ICON -->
+      <div class="flex justify-center">
+        <div
+          class="w-28 h-28 rounded-full bg-white shadow-xl flex items-center justify-center"
+        >
+          <div
+            class="w-16 h-16 rounded-full bg-blue-500 flex items-center justify-center"
+          >
+            <Check class="text-white" size={38} strokeWidth={3} />
+          </div>
+        </div>
+      </div>
+
+      <!-- TITLE -->
+      <div class="mt-8">
+        <h1 class="text-5xl font-bold text-slate-800">Aplikasi Terkirim!</h1>
+
+        <p class="text-slate-500 mt-4 text-lg">
+          Lamaran Anda untuk posisi ini telah berhasil terkirim.
+        </p>
+      </div>
+
+      <!-- JOB INFO -->
+      <div class="mt-10">
+        <h2 class="text-3xl font-bold text-slate-800">
+          Senior Product Designer
+        </h2>
+
+        <div
+          class="flex items-center justify-center gap-3 mt-4 text-slate-500 text-base"
+        >
+          <div class="flex items-center gap-1.5">
+            <BriefcaseBusiness size={16} />
+            <span>Techalow Interactive</span>
+          </div>
+
+          <span>•</span>
+
+          <div class="flex items-center gap-1.5">
+            <MapPin size={16} />
+            <span>Jakarta, Indonesia</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- WARNING BOX -->
+      <div
+        class="mt-10 bg-[#eef3ff] border border-[#d7e1ff] rounded-3xl p-6 text-left shadow-sm"
+      >
+        <div class="flex items-start gap-3">
+          <TriangleAlert class="text-red-500 mt-0.5 shrink-0" size={22} />
+
+          <div class="flex-1">
+            <h3 class="font-semibold text-slate-800 text-lg">Perhatian</h3>
+
+            <p class="text-slate-600 mt-2 leading-relaxed">
+              Mohon simpan link tersebut karena tidak muncul untuk kedua kalinya
+              lagi.
+            </p>
+
+            <!-- LINK BOX -->
+            <div
+              class="mt-5 bg-white border border-slate-200 rounded-2xl px-5 py-4 flex items-center justify-between"
+            >
+              <span class="text-slate-500 text-sm truncate">
+                {trackingLink}
+              </span>
+
+              <button
+                type="button"
+                id="copyButton"
+                class="text-blue-500 hover:text-blue-600 transition"
+              >
+                <Copy size={20} />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- INFO BOX -->
+      <div
+        class="mt-6 bg-[#eef3ff] border border-[#d7e1ff] rounded-3xl p-6 text-left shadow-sm"
+      >
+        <div class="flex items-start gap-3">
+          <Info class="text-blue-500 mt-0.5 shrink-0" size={22} />
+
+          <div>
+            <h3 class="font-semibold text-slate-800 text-lg">
+              Cara Penggunaan Link
+            </h3>
+
+            <div class="mt-3 space-y-2 text-slate-600 leading-relaxed">
+              <p>Kembali ke halaman job klik pada button application.</p>
+
+              <p>Tempel link tersebut dan klik ok.</p>
+
+              <p>Maka akan tampil status lamaran Anda.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BUTTON -->
+      <div class="mt-10">
+        <a
+          href="/jobs"
+          class="inline-flex items-center justify-center bg-blue-500 hover:bg-blue-600 transition text-white font-medium px-8 py-4 rounded-full shadow-lg shadow-blue-200"
+        >
+          Cari Pekerjaan Lain
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- COPY SCRIPT -->
+  <script>
+    const copyButton = document.getElementById("copyButton");
+
+    copyButton?.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText("jobconnect.com/track/app-123-xyz");
+
+        copyButton.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round">
+            <path d="M20 6 9 17l-5-5"/>
+          </svg>
+        `;
+
+        setTimeout(() => {
+          copyButton.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round">
+              <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+              <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+            </svg>
+          `;
+        }, 2000);
+      } catch (err) {
+        console.error("Failed to copy:", err);
+      }
+    });
+  </script>
+</MainLayout>

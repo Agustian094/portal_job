@@ -102,15 +102,16 @@ const cities = (cityResponse && cityResponse.entries) || [];
           findSelectByLabel("City") ||
           document.querySelectorAll("select")[1] ||
           null;
-        const nameInput = form.querySelector(
-          'input[placeholder="Your full name"]',
-        );
+        const nameInput =
+          findInputByLabel("Full Name") ||
+          form.querySelector('input[placeholder="Johnathan Doe"]');
         const emailInput = form.querySelector('input[type="email"]');
-        const whatsappInput = form.querySelector(
-          'input[placeholder="+62 8123456789"]',
-        );
+        const whatsappInput =
+          findInputByLabel("Phone Number") ||
+          form.querySelector('input[placeholder="081234567890"]');
         const salaryInput = document.getElementById("salary");
         const educationSelect =
+          document.getElementById("education") ||
           findSelectByLabel("Education") ||
           document.querySelectorAll("select")[2];
 
@@ -128,6 +129,16 @@ const cities = (cityResponse && cityResponse.entries) || [];
         const allCities = Array.isArray(locationData.cities)
           ? locationData.cities
           : [];
+        const provinceIdToLegacyId = new Map(
+          allProvinces.map((province) => [
+            String(province._id || province.id || province.prov_id || ""),
+            province.prov_id || province._id || province.id || "",
+          ]),
+        );
+
+        function formatDateOnly(date = new Date()) {
+          return date.toISOString().slice(0, 10);
+        }
 
         // Format salary input
         function formatRupiahFromDigits(digits) {
@@ -156,15 +167,19 @@ const cities = (cityResponse && cityResponse.entries) || [];
           provinceSelect.innerHTML = provincePlaceholder;
           allProvinces.forEach((e) => {
             const opt = document.createElement("option");
-            opt.value = e.prov_id || e._id || e.id;
+            opt.value = e._id || e.id || e.prov_id;
             opt.textContent = e.name || e.title || String(opt.value);
             provinceSelect.appendChild(opt);
           });
         }
 
-        async function loadCities(provId) {
-          console.log("client: loadCities called with provId=", provId);
-          if (!provId) {
+        async function loadCities(provinceValue) {
+          console.log(
+            "client: loadCities called with provinceValue=",
+            provinceValue,
+          );
+          const legacyProvId = provinceIdToLegacyId.get(String(provinceValue));
+          if (!legacyProvId) {
             citySelect.innerHTML = cityPlaceholder;
             setCityDisabledState(true);
             citySelect.value = "";
@@ -173,11 +188,11 @@ const cities = (cityResponse && cityResponse.entries) || [];
 
           try {
             const entries = allCities.filter(
-              (entry) => String(entry.prov_id) === String(provId),
+              (entry) => String(entry.prov_id) === String(legacyProvId),
             );
             console.log(
               "client: received cities for provId=",
-              provId,
+              legacyProvId,
               "count=",
               entries.length,
             );
@@ -197,19 +212,19 @@ const cities = (cityResponse && cityResponse.entries) || [];
         }
 
         function handleProvinceChange(event) {
-          const selectedProvId = event.target.value;
+          const selectedProvinceValue = event.target.value;
           provinceSelect.setCustomValidity("");
           if (citySelect) citySelect.setCustomValidity("");
 
           citySelect.value = "";
-          console.log("client: province changed ->", selectedProvId);
-          if (!selectedProvId) {
+          console.log("client: province changed ->", selectedProvinceValue);
+          if (!selectedProvinceValue) {
             citySelect.innerHTML = cityPlaceholder;
             setCityDisabledState(true);
             return;
           }
 
-          loadCities(selectedProvId);
+          loadCities(selectedProvinceValue);
         }
 
         function handleCityFocus() {
@@ -241,6 +256,52 @@ const cities = (cityResponse && cityResponse.entries) || [];
           const submitBtn = form.querySelector('button[type="submit"]');
           if (submitBtn) submitBtn.disabled = true;
 
+          // Validate required fields
+          const validationErrors = [];
+
+          if (!nameInput?.value || !String(nameInput.value).trim()) {
+            validationErrors.push("Full Name is required");
+            nameInput?.setCustomValidity("Full Name is required");
+            nameInput?.reportValidity();
+          } else {
+            nameInput?.setCustomValidity("");
+          }
+
+          if (!emailInput?.value || !String(emailInput.value).trim()) {
+            validationErrors.push("Email Address is required");
+            emailInput?.setCustomValidity("Email Address is required");
+            emailInput?.reportValidity();
+          } else {
+            emailInput?.setCustomValidity("");
+          }
+
+          if (!whatsappInput?.value || !String(whatsappInput.value).trim()) {
+            validationErrors.push("Phone Number is required");
+            whatsappInput?.setCustomValidity("Phone Number is required");
+            whatsappInput?.reportValidity();
+          } else {
+            whatsappInput?.setCustomValidity("");
+          }
+
+          if (!salaryInput?.value || !String(salaryInput.value).trim()) {
+            validationErrors.push("Expected Salary is required");
+            salaryInput?.setCustomValidity("Expected Salary is required");
+            salaryInput?.reportValidity();
+          } else {
+            salaryInput?.setCustomValidity("");
+          }
+
+          if (
+            !educationSelect?.value ||
+            String(educationSelect.value).trim() === ""
+          ) {
+            validationErrors.push("Education is required");
+            educationSelect?.setCustomValidity("Education is required");
+            educationSelect?.reportValidity();
+          } else {
+            educationSelect?.setCustomValidity("");
+          }
+
           if (!provinceSelect?.value) {
             provinceSelect.setCustomValidity(
               "Silakan pilih province terlebih dahulu",
@@ -255,6 +316,15 @@ const cities = (cityResponse && cityResponse.entries) || [];
             citySelect.setCustomValidity("Silakan pilih city terlebih dahulu");
             citySelect.reportValidity();
             citySelect.setCustomValidity("");
+            if (submitBtn) submitBtn.disabled = false;
+            return;
+          }
+
+          if (validationErrors.length > 0) {
+            alert(
+              "Please fill in all required fields:\n" +
+                validationErrors.join("\n"),
+            );
             if (submitBtn) submitBtn.disabled = false;
             return;
           }
@@ -285,8 +355,7 @@ const cities = (cityResponse && cityResponse.entries) || [];
             if (file) fd.append("portofolio", file, file.name);
 
             // additional fields
-            fd.append("date", new Date().toISOString());
-            fd.append("current_stage", "applied");
+            fd.append("date", formatDateOnly());
             fd.append("stage_notes", "");
 
             const resp = await fetch("/api/submit-application", {
@@ -296,7 +365,20 @@ const cities = (cityResponse && cityResponse.entries) || [];
             const json = await resp.json();
             if (resp.ok && json.ok) {
               alert("Application submitted successfully");
-              form.reset();
+              // Redirect to question page
+              const jobId = jobIdInput.value;
+              const applicationId =
+                json?.result?._id ||
+                json?.result?.entry?._id ||
+                json?.result?.data?._id ||
+                "";
+
+              if (applicationId) {
+                window.location.href = `/question/${jobId}?application_id=${encodeURIComponent(applicationId)}`;
+              } else {
+                // Fallback keeps old flow if API shape changes unexpectedly
+                window.location.href = `/question/${jobId}`;
+              }
             } else {
               throw new Error(json.error || "Submission failed");
             }
@@ -337,6 +419,9 @@ const cities = (cityResponse && cityResponse.entries) || [];
 
           <!-- FORM -->
           <form class="space-y-6">
+            <!-- Hidden job_id field -->
+            <input type="hidden" name="job_id" value={id} />
+
             <!-- FULL NAME -->
             <div>
               <label class="text-sm font-semibold text-gray-700 mb-2 block">
@@ -352,6 +437,7 @@ const cities = (cityResponse && cityResponse.entries) || [];
                 <input
                   type="text"
                   placeholder="Johnathan Doe"
+                  required
                   class="w-full bg-[#F5F7FB] border border-transparent rounded-xl pl-12 pr-4 py-3.5 outline-none text-black placeholder:text-gray-300 focus:border-blue-400 focus:ring-4 focus:ring-blue-100 transition"
                 />
               </div>
@@ -374,6 +460,7 @@ const cities = (cityResponse && cityResponse.entries) || [];
                   <input
                     type="email"
                     placeholder="john@example.com"
+                    required
                     class="w-full bg-[#F5F7FB] border border-transparent rounded-xl pl-12 pr-4 py-3.5 outline-none text-black placeholder:text-gray-300 focus:border-blue-400 focus:ring-4 focus:ring-blue-100 transition"
                   />
                 </div>
@@ -394,6 +481,7 @@ const cities = (cityResponse && cityResponse.entries) || [];
                   <input
                     type="text"
                     placeholder="081234567890"
+                    required
                     class="w-full bg-[#F5F7FB] border border-transparent rounded-xl pl-12 pr-4 py-3.5 outline-none text-black placeholder:text-gray-300 focus:border-blue-400 focus:ring-4 focus:ring-blue-100 transition"
                   />
                 </div>
@@ -473,6 +561,7 @@ const cities = (cityResponse && cityResponse.entries) || [];
                     id="salary"
                     type="text"
                     placeholder="Rp. 4.000.000"
+                    required
                     class="w-full bg-[#F5F7FB] border border-transparent rounded-xl pl-12 pr-4 py-3.5 outline-none text-black placeholder:text-gray-300 focus:border-blue-400 focus:ring-4 focus:ring-blue-100 transition"
                   />
                 </div>
@@ -491,14 +580,16 @@ const cities = (cityResponse && cityResponse.entries) || [];
                   />
 
                   <select
+                    id="education"
+                    required
                     class="appearance-none w-full bg-[#F5F7FB] border border-transparent rounded-xl pl-12 pr-12 py-3.5 outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-100 transition text-gray-700"
                   >
-                    <option>Select Education</option>
-                    <option>SMA/SMK</option>
-                    <option>Diploma</option>
-                    <option>Sarjana (s1)</option>
-                    <option>Magister (s2)</option>
-                    <option>Doktor (s3)</option>
+                    <option value="">Select Education</option>
+                    <option value="SMA/SMK">SMA/SMK</option>
+                    <option value="Diploma">Diploma</option>
+                    <option value="Sarjana (s1)">Sarjana (s1)</option>
+                    <option value="Magister (s2)">Magister (s2)</option>
+                    <option value="Doktor (s3)">Doktor (s3)</option>
                   </select>
 
                   <ChevronDown
