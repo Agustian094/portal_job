@@ -387,7 +387,17 @@ function parseOptions(optString: string | undefined): string[] {
 
           if (resp.ok && json.ok) {
             alert("Answers submitted successfully");
-            // optional: redirect or show success UI
+            const currentPathParts = window.location.pathname
+              .split("/")
+              .filter(Boolean);
+            const jobId = currentPathParts[currentPathParts.length - 1] || "";
+            const qs = new URLSearchParams();
+            if (jobId) qs.set("job_id", jobId);
+            if (applicationId) qs.set("application_id", applicationId);
+            const queryString = qs.toString();
+            window.location.href = queryString
+              ? `/succes?${queryString}`
+              : "/succes";
           } else {
             // if some entries failed, show details
             const details = json && json.results ? json.results : json;
