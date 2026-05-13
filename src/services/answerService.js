@@ -8,7 +8,7 @@ function collectionSaveUrl(collection) {
 }
 
 async function postJson(url, payload) {
-  console.log(`[answerService] POST ${url} payload:`, JSON.stringify(payload));
+  console.log("[answerService] POST application_answer payload:", JSON.stringify(payload));
   const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json", Accept: "application/json" },

@@ -12,9 +12,8 @@ const { title = "Job Portal" } = Astro.props;
   </head>
 
   <body class="bg-white min-h-screen">
-
     <!-- Wrapper biru -->
-    <div class="bg-gradient-to-r from-blue-500 to-blue-400 pb-20">
+    <div class="px-4 bg-gradient-to-r from-blue-500 to-blue-400 pb-20">
       <Navbar />
       <slot name="hero" />
     </div>
@@ -25,6 +24,5 @@ const { title = "Job Portal" } = Astro.props;
     </main>
 
     <Footer />
-
   </body>
 </html>

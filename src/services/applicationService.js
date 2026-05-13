@@ -61,7 +61,6 @@ export async function getInitialJobStage(jobPostingId) {
 
 export async function submitApplication(formData) {
   const url = `${BASE_URL}collections/save/t_application?token=${TOKEN}`;
-  console.log("[submitApplication] Posting to:", url);
   // Convert FormData -> plain object for JSON payload
   const obj = {};
   for (const key of formData.keys()) {
@@ -75,14 +74,7 @@ export async function submitApplication(formData) {
 
     if (initialStage) {
       obj.current_stage = initialStage;
-      console.log("[submitApplication] Resolved current_stage from job_stages:", {
-        jobPostingId,
-        stageId: initialStage._id,
-        label: initialStage.label,
-        stageOrder: initialStage.stage_order,
-      });
     } else {
-      console.log("[submitApplication] No matching job_stages found for job_posting:", jobPostingId);
       delete obj.current_stage;
     }
   } else if (typeof obj.current_stage === "string") {
@@ -109,16 +101,13 @@ export async function submitApplication(formData) {
         _id: String(obj[fieldName]).trim(),
         link: collectionName,
       };
-      console.log(`[submitApplication] Transformed ${fieldName} to collectionlink:`, obj[fieldName]);
     } else {
       // Remove empty collectionlink fields
       delete obj[fieldName];
-      console.log(`[submitApplication] Removed empty collectionlink field: ${fieldName}`);
     }
   }
 
   const payload = { data: obj };
-  console.log("[submitApplication] Sending JSON payload keys:", Object.keys(obj));
 
   // Try JSON first (many Cockpit-like APIs accept JSON bodies)
   let res = await fetch(url, {
@@ -127,27 +116,18 @@ export async function submitApplication(formData) {
     body: JSON.stringify(payload),
   });
 
-  console.log("[submitApplication] Response status:", res.status, res.statusText);
-  try {
-    console.log("[submitApplication] Response headers:", Object.fromEntries(res.headers.entries()));
-  } catch (e) {
-    // ignore
-  }
-
   // If the JSON approach returns 404, try a multipart/form-data fallback
   if (res.status === 404) {
-    console.log("[submitApplication] JSON save returned 404, retrying with multipart/form-data");
     res = await fetch(url, {
       method: "POST",
       body: formData,
     });
 
-    console.log("[submitApplication] Fallback response status:", res.status, res.statusText);
+    // Fallback fallback response status is logged
   }
 
   if (!res.ok) {
     const text = await res.text();
-    console.log("[submitApplication] Error response body:", text);
     throw new Error(`Gagal submit aplikasi: ${res.status} ${text}`);
   }
 
@@ -156,9 +136,7 @@ export async function submitApplication(formData) {
 
 export async function getProvinces() {
   const url = collectionGetUrl("m_province");
-  console.log("service.getProvinces -> URL:", url);
   const data = await fetchJson(url);
-  console.log("service.getProvinces -> entries:", (data.entries || []).length);
   return data;
 }
 
@@ -166,7 +144,7 @@ export async function getCities(provId = "") {
   // Fetch all cities from Cockpit and filter locally by prov_id.
   // This avoids depending on Cockpit's filter query format which may differ.
   const url = collectionGetUrl("m_city");
-  console.log("service.getCities -> URL:", url, "provId:", provId || "(none)");
+  console.log("service.getCities -> fetching cities, provId:", provId || "(none)");
   const data = await fetchJson(url);
   const entries = data.entries || [];
   console.log("service.getCities -> fetched entries:", entries.length);
@@ -174,7 +152,6 @@ export async function getCities(provId = "") {
   if (provId) {
     const provIdNum = Number(provId);
     const filtered = entries.filter((e) => Number(e.prov_id) === provIdNum);
-    console.log("service.getCities -> after filter provId:", provId, "filtered:", filtered.length);
     return { entries: filtered };
   }
 

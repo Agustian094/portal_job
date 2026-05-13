@@ -3,16 +3,11 @@ import { Menu } from "lucide-astro";
 ---
 
 <nav class="w-full flex justify-center pt-4">
-  <div class="w-[90%] relative">
+  <div class="max-w-5xl w-full mx-auto relative">
     <!-- Navbar -->
     <div
-      class="bg-white rounded-xl shadow-md px-6 py-3 flex items-center justify-between"
+      class="bg-white/50 rounded-xl shadow-md px-6 py-3 flex items-center justify-between"
     >
-      <!-- Logo -->
-      <div class="flex items-center gap-2 font-semibold text-gray-800 z-10">
-        <span>Job Portal</span>
-      </div>
-
       <!-- Menu Desktop (CENTER) -->
       <ul
         class="hidden md:flex gap-8 text-gray-600 font-medium absolute left-1/2 -translate-x-1/2"
@@ -20,8 +15,9 @@ import { Menu } from "lucide-astro";
         <li><a href="/home" class="hover:text-blue-500">Home</a></li>
         <li><a href="/jobs" class="hover:text-blue-500">Jobs</a></li>
         <li><a href="/company" class="hover:text-blue-500">Company</a></li>
-        <li><a href="/contact" class="hover:text-blue-500">Contact</a></li>
       </ul>
+
+      <a href="/contact" class="hover:text-blue-500">Contact</a>
 
       <!-- Hamburger -->
       <button

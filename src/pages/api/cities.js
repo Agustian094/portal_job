@@ -8,7 +8,6 @@ function collectionGetUrl(collection, query = "") {
 }
 
 function fetchJson(url) {
-  console.log("api/cities -> cockpit URL:", url);
   return new Promise((resolve, reject) => {
     https
       .get(url, (res) => {
