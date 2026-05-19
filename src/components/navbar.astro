@@ -1,51 +1,183 @@
 ---
 import { Menu } from "lucide-astro";
+
+const pathname = Astro.url?.pathname ?? "/";
+
+const normalizePath = (path) => {
+  const clean = (path ?? "/").split("?")[0].split("#")[0];
+  if (clean.length > 1 && clean.endsWith("/")) return clean.slice(0, -1);
+  return clean;
+};
+
+const isActive = (href) => normalizePath(pathname) === normalizePath(href);
 ---
 
 <nav class="w-full flex justify-center pt-4">
-  <div class="max-w-5xl w-full mx-auto relative">
+  <div class="max-w-7xl w-full mx-auto relative text-white">
     <!-- Navbar -->
-    <div
-      class="bg-white/50 rounded-xl shadow-md px-6 py-3 flex items-center justify-between"
-    >
-      <!-- Menu Desktop (CENTER) -->
-      <ul
-        class="hidden md:flex gap-8 text-gray-600 font-medium absolute left-1/2 -translate-x-1/2"
+    <div class="navbar-shell relative">
+      <div
+        class="navbar-shape pointer-events-none absolute inset-0 rounded-2xl bg-linear-to-r from-blue-500 to-blue-400 backdrop-blur-md border border-white/10"
+        aria-hidden="true"
       >
-        <li><a href="/home" class="hover:text-blue-500">Home</a></li>
-        <li><a href="/jobs" class="hover:text-blue-500">Jobs</a></li>
-        <li><a href="/company" class="hover:text-blue-500">Company</a></li>
-      </ul>
+      </div>
 
-      <a href="/contact" class="hover:text-blue-500">Contact</a>
-
-      <!-- Hamburger -->
-      <button
-        class="md:hidden text-gray-700 z-10"
-        onclick="
+      <div class="relative z-10 flex items-center justify-start gap-3 px-3 py-2">  
+        <!-- Hamburger -->
+        <button
+          class="md:hidden text-white z-10"
+          onclick="
         const menu = document.getElementById('mobile-menu');
         menu.classList.toggle('opacity-0');
         menu.classList.toggle('scale-95');
         menu.classList.toggle('invisible');
         "
-      >
-        <Menu />
-      </button>
+        >
+          <Menu />
+        </button>
+        <a href="/" class="flex items-center gap-2 min-w-0">
+          <img
+            src="/images/logoTTG.png"
+            alt="Company Logo"
+            class="w-10 h-10 rounded-lg object-cover"
+          />
+          <span class="font-semibold text-sm leading-none whitespace-nowrap sm:hidden">TTG</span>
+          <span class="font-semibold text-sm leading-none whitespace-nowrap hidden sm:inline truncate">
+            Tim Teknologi Global
+          </span>
+        </a>
+        <!-- Menu Desktop (CENTER) -->
+        <ul
+          id="desktop-menu"
+          class="bg-white/30 backdrop-blur-md border border-white/10 rounded-full px-2 py-3 hidden md:flex gap-1 text-white font-semibold absolute left-1/2 -translate-x-1/2 order-2 text-sm"
+        >
+          <span
+            id="desktop-indicator"
+            class="pointer-events-none absolute top-1 bottom-1 left-0 rounded-full bg-linear-to-r from-blue-500 to-blue-400 transition-[transform,width,opacity] duration-300 ease-out opacity-0"
+            style="width: 0px; transform: translateX(0px);"></span>
+          <li>
+            <a
+              href="/"
+              aria-current={isActive("/") ? "page" : undefined}
+              class="relative z-10 rounded-full px-4 py-2">Home</a
+            >
+          </li>
+          <li>
+            <a
+              href="/jobs"
+              aria-current={isActive("/jobs") ? "page" : undefined}
+              class="relative z-10 rounded-full px-4 py-2">Jobs</a
+            >
+          </li>
+          <li>
+            <a
+              href="/company"
+              aria-current={isActive("/company") ? "page" : undefined}
+              class="relative z-10 rounded-full px-4 py-2">Company</a
+            >
+          </li>
+        </ul>
+
+        <a
+          href="/contact"
+          aria-current={isActive("/contact") ? "page" : undefined}
+          class="order-3 ml-auto bg-linear-to-b from-blue-500 to-blue-400 border border-white/10 rounded-full px-4 py-2 text-sm font-semibold"
+          >Contact</a
+        >
+
+      </div>
     </div>
 
     <!-- Mobile Menu -->
     <div
       id="mobile-menu"
-      class="absolute left-0 top-full mt-2 w-full bg-white rounded-xl shadow-md p-4 md:hidden z-20
+      class="absolute left-0 top-full mt-2 w-full bg-white rounded-xl p-4 md:hidden z-20
          opacity-0 scale-95 invisible
          transition-all duration-300 ease-in-out"
     >
       <ul class="flex flex-col gap-4 text-gray-600 font-medium">
-        <li><a href="/" class="hover:text-blue-500">Home</a></li>
-        <li><a href="/jobs" class="hover:text-blue-500">Jobs</a></li>
-        <li><a href="/company" class="hover:text-blue-500">Company</a></li>
-        <li><a href="/contact" class="hover:text-blue-500">Contact</a></li>
+        <li>
+          <a
+            href="/"
+            aria-current={isActive("/") ? "page" : undefined}
+            class:list={[
+              "px-3 py-2 rounded-lg transition-colors hover:bg-slate-100 hover:text-blue-500 font-semibold font-sm",
+              isActive("/") && "bg-slate-100 text-blue-500",
+            ]}>Home</a
+          >
+        </li>
+        <li>
+          <a
+            href="/jobs"
+            aria-current={isActive("/jobs") ? "page" : undefined}
+            class:list={[
+              "px-3 py-2 rounded-lg transition-colors hover:bg-slate-100 hover:text-blue-500 font-semibold font-sm",
+              isActive("/jobs") && "bg-slate-100 text-blue-500",
+            ]}>Jobs</a
+          >
+        </li>
+        <li>
+          <a
+            href="/company"
+            aria-current={isActive("/company") ? "page" : undefined}
+            class:list={[
+              "px-3 py-2 rounded-lg transition-colors hover:bg-slate-100 hover:text-blue-500 font-semibold font-sm",
+              isActive("/company") && "bg-slate-100 text-blue-500",
+            ]}>Company</a
+          >
+        </li>
       </ul>
     </div>
   </div>
 </nav>
+
+<script>
+  const menu = document.getElementById("desktop-menu");
+  const indicator = document.getElementById("desktop-indicator");
+
+  if (menu && indicator) {
+    const links = Array.from(menu.querySelectorAll("a[href]"));
+    const activeLink = menu.querySelector('a[aria-current="page"]');
+    let currentLink = activeLink;
+
+    const moveIndicatorTo = (link) => {
+      if (!link) return;
+      const menuRect = menu.getBoundingClientRect();
+      const linkRect = link.getBoundingClientRect();
+      const left = linkRect.left - menuRect.left;
+
+      indicator.style.opacity = "1";
+      indicator.style.width = `${linkRect.width}px`;
+      indicator.style.transform = `translateX(${left}px)`;
+    };
+
+    const hideIndicator = () => {
+      indicator.style.opacity = "0";
+      indicator.style.width = "0px";
+    };
+
+    links.forEach((link) => {
+      link.addEventListener("mouseenter", () => {
+        currentLink = link;
+        moveIndicatorTo(link);
+      });
+      link.addEventListener("focus", () => {
+        currentLink = link;
+        moveIndicatorTo(link);
+      });
+    });
+
+    menu.addEventListener("mouseleave", () => {
+      currentLink = activeLink;
+      if (activeLink) moveIndicatorTo(activeLink);
+      else hideIndicator();
+    });
+
+    window.addEventListener("resize", () => {
+      if (currentLink) moveIndicatorTo(currentLink);
+      else if (activeLink) moveIndicatorTo(activeLink);
+    });
+
+    if (activeLink) moveIndicatorTo(activeLink);
+  }
+</script>

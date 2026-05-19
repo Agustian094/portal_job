@@ -1,17 +1,53 @@
 ---
+import MainLayout from "../layouts/mainlayout.astro";
+import Hero from "../components/hero.astro";
+import JobCard from "../components/jobcard.astro";
+import { getJobs } from "../services/jobService";
 
+type JobPosting = {
+  _id: string;
+  title?: string;
+  slug?: string;
+  summary?: string;
+  description?: string;
+  requirement?: string;
+  transaction_status?: number | string;
+};
+
+const response = await getJobs();
+const jobs = ((response?.entries ?? []) as JobPosting[]).filter(
+  (job: JobPosting) => Number(job.transaction_status) === 100,
+);
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<MainLayout title="Home">
+  <!-- Bagian hero -->
+  <Hero slot="hero" />
+
+  <!-- Bagian daftar lowongan -->
+  <section class="bg-white -mt-20 pt-12 pb-12 rounded-t-3xl relative z-10">
+    <div class="w-[90%] mx-auto">
+      <div class="mb-6 space-y-2">
+        <h2 class="text-2xl font-bold text-slate-900">Available Jobs</h2>
+      </div>
+
+      <div class="flex flex-col gap-4">
+        {
+          jobs.length === 0 ? (
+            <p class="text-slate-500">job vacancies are still not available.</p>
+          ) : (
+            jobs.map((job: JobPosting) => (
+              <JobCard
+                id={job._id}
+                title={job.title}
+                slug={job.slug}
+                summary={job.summary}
+                description={job.description}
+              />
+            ))
+          )
+        }
+      </div>
+    </div>
+  </section>
+</MainLayout>
