@@ -2,14 +2,7 @@
 import MainLayout from "../../layouts/mainlayout.astro";
 import { getJobs } from "../../services/jobService";
 import type { GetStaticPaths } from "astro";
-import {
-  MapPin,
-  Briefcase,
-  Clock,
-  DollarSign,
-  Laptop,
-  Send,
-} from "lucide-astro";
+import { MapPin, Briefcase, Clock, Laptop, Send } from "lucide-astro";
 
 interface JobEntry {
   _id: string;
@@ -109,17 +102,6 @@ if (!job) {
     <div class="w-[90%] mx-auto space-y-6">
       <!-- ===== SALARY / INFO CARD ===== -->
       <div class="bg-white p-6 rounded-2xl shadow-md grid md:grid-cols-2 gap-6">
-        <!-- Salary -->
-        <div class="flex items-center gap-4">
-          <div class="bg-green-100 p-3 rounded-lg">
-            <DollarSign class="text-green-600 w-5 h-5" />
-          </div>
-          <div>
-            <p class="text-sm text-gray-500">Salary</p>
-            <p class="font-semibold text-gray-800">Negotiable</p>
-          </div>
-        </div>
-
         <!-- Work Type -->
         <div class="flex items-center gap-4">
           <div class="bg-purple-100 p-3 rounded-lg">
@@ -128,7 +110,7 @@ if (!job) {
           <div>
             <p class="text-sm text-gray-500">Work Type</p>
             <p class="font-semibold text-gray-800">
-              {job.slug}
+              {job.summary}
             </p>
           </div>
         </div>

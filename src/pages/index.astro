@@ -1,53 +1,165 @@
 ---
 import MainLayout from "../layouts/mainlayout.astro";
-import Hero from "../components/hero.astro";
-import JobCard from "../components/jobcard.astro";
-import { getJobs } from "../services/jobService";
-
-type JobPosting = {
-  _id: string;
-  title?: string;
-  slug?: string;
-  summary?: string;
-  description?: string;
-  requirement?: string;
-  transaction_status?: number | string;
-};
-
-const response = await getJobs();
-const jobs = ((response?.entries ?? []) as JobPosting[]).filter(
-  (job: JobPosting) => Number(job.transaction_status) === 100,
-);
 ---
 
 <MainLayout title="Home">
-  <!-- Bagian hero -->
-  <Hero slot="hero" />
+  <!-- ================= HERO FIXED ================= -->
+  <section class="fixed top-0 left-0 w-full h-screen z-0 overflow-hidden">
+    <img
+      src="/images/team-office.png"
+      alt="Team Collaboration"
+      class="w-full h-full object-cover"
+    />
 
-  <!-- Bagian daftar lowongan -->
-  <section class="bg-white -mt-20 pt-12 pb-12 rounded-t-3xl relative z-10">
-    <div class="w-[90%] mx-auto">
-      <div class="mb-6 space-y-2">
-        <h2 class="text-2xl font-bold text-slate-900">Available Jobs</h2>
+    <!-- Overlay -->
+    <div class="absolute inset-0 bg-black/20"></div>
+  </section>
+
+  <!-- ================= CONTENT ================= -->
+  <section
+    class="relative z-10 bg-[#f5f5f5] rounded-t-[30px] md:rounded-t-[45px] mt-[60vh] md:mt-[70vh] pb-12 md:pb-20"
+  >
+    <!-- ================= BENEFITS ================= -->
+    <section class="py-14 md:py-20">
+      <div class="w-[92%] max-w-7xl mx-auto">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-10 lg:gap-14">
+          <!-- CARD -->
+          <div>
+            <h3
+              class="text-xl md:text-2xl font-bold leading-tight mb-4 md:mb-5"
+            >
+              Supportive & Innovative Workplace
+            </h3>
+
+            <p class="text-base leading-[1.8] text-justify text-gray-900">
+              Every day, you will have the opportunity to work alongside
+              talented individuals who bring diverse skills, perspectives, and
+              experiences that create meaningful contributions to the team.
+            </p>
+
+            <p class="text-base leading-[1.8] text-justify text-gray-900 mt-4">
+              Together, you will build a positive environment where
+              collaboration, growth, and support feel like part of a second
+              family.
+            </p>
+          </div>
+
+          <!-- CARD -->
+          <div>
+            <h3
+              class="text-xl md:text-2xl font-bold leading-tight mb-4 md:mb-5"
+            >
+              Advance Training Program & Facilities
+            </h3>
+
+            <p class="text-base leading-[1.8] text-justify text-gray-900">
+              Every day, you will have the opportunity to work alongside
+              talented individuals who bring diverse skills, perspectives, and
+              experiences that create meaningful contributions to the team.
+            </p>
+
+            <p class="text-base leading-[1.8] text-justify text-gray-900 mt-4">
+              Together, you will build a positive environment where
+              collaboration, growth, and support feel like part of a second
+              family.
+            </p>
+          </div>
+
+          <!-- CARD -->
+          <div>
+            <h3
+              class="text-xl md:text-2xl font-bold leading-tight mb-4 md:mb-5"
+            >
+              Internship & Professional Opportunities
+            </h3>
+
+            <p class="text-base leading-[1.8] text-justify text-gray-900">
+              Every day, you will have the opportunity to work alongside
+              talented individuals who bring diverse skills, perspectives, and
+              experiences that create meaningful contributions to the team.
+            </p>
+
+            <p class="text-base leading-[1.8] text-justify text-gray-900 mt-4">
+              Together, you will build a positive environment where
+              collaboration, growth, and support feel like part of a second
+              family.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= ACTIVITIES ================= -->
+    <section class="pb-1 md:pb-2">
+      <div class="w-[92%] max-w-7xl mx-auto">
+        <!-- TITLE -->
+        <h2 class="text-center text-3xl md:text-4xl font-bold mb-10 md:mb-14">
+          Activities
+        </h2>
+
+        <!-- GRID -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+          <div class="overflow-hidden rounded-xl shadow-md">
+            <img
+              src="/images/activities (1).png"
+              alt="Activity"
+              class="w-full h-55 md:h-65 lg:h-80 object-cover hover:scale-105 transition duration-500"
+            />
+          </div>
+
+          <div class="overflow-hidden rounded-xl shadow-md">
+            <img
+              src="/images/activities (2).png"
+              alt="Activity"
+              class="w-full h-55 md:h-65 lg:h-80 object-cover hover:scale-105 transition duration-500"
+            />
+          </div>
+
+          <div class="overflow-hidden rounded-xl shadow-md">
+            <img
+              src="/images/activities (3).png"
+              alt="Activity"
+              class="w-full h-55 md:h-65 lg:h-80 object-cover hover:scale-105 transition duration-500"
+            />
+          </div>
+        </div>
       </div>
 
-      <div class="flex flex-col gap-4">
-        {
-          jobs.length === 0 ? (
-            <p class="text-slate-500">job vacancies are still not available.</p>
-          ) : (
-            jobs.map((job: JobPosting) => (
-              <JobCard
-                id={job._id}
-                title={job.title}
-                slug={job.slug}
-                summary={job.summary}
-                description={job.description}
-              />
-            ))
-          )
-        }
-      </div>
-    </div>
+      <!-- ================= CAREER ================= -->
+      <section class="mt-10">
+        <div class="w-[92%] max-w-245 mx-auto">
+          <!-- CARD -->
+          <div
+            class="rounded-2xl overflow-hidden shadow-xl border border-gray-200"
+          >
+            <div class="bg-[#f3f3f3] px-5 md:px-8 lg:px-10 py-6 md:py-8">
+              <h2
+                class="text-xl text-center md:text-3xl font-bold leading-[1.4] py-4 md:py-4"
+              >
+                Ready to Elevate Your Professionl Career ?
+              </h2>
+              <p class="text-base leading-[1.8] text-justify text-gray-900">
+                At Tim Teknologi Global, you have the opportunity to build your
+                own career journey while collaborating with talented people and
+                innovative projects that contribute to sustainable business
+                growth. If you are a proactive professional who is passionate
+                about growth and innovation, explore our available job
+                opportunities and become part of our growing team.
+              </p>
+            </div>
+          </div>
+
+          <!-- BUTTON -->
+          <div class="flex justify-center mt-8">
+            <a
+              href="/jobs"
+              class="bg-linear-to-r from-blue-500 to-blue-400 hover:bg-[#62dbe7] transition-all duration-300 text-white text-[12px] md:text-[14px] font-medium px-6 md:px-3 py-2 md:py-2 rounded-md shadow-md hover:scale-105"
+            >
+              View Job
+            </a>
+          </div>
+        </div>
+      </section>
+    </section>
   </section>
 </MainLayout>

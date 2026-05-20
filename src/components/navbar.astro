@@ -22,7 +22,9 @@ const isActive = (href) => normalizePath(pathname) === normalizePath(href);
       >
       </div>
 
-      <div class="relative z-10 flex items-center justify-start gap-3 px-3 py-2">  
+      <div
+        class="relative z-10 flex items-center justify-start gap-3 px-3 py-2"
+      >
         <!-- Hamburger -->
         <button
           class="md:hidden text-white z-10"
@@ -41,8 +43,13 @@ const isActive = (href) => normalizePath(pathname) === normalizePath(href);
             alt="Company Logo"
             class="w-10 h-10 rounded-lg object-cover"
           />
-          <span class="font-semibold text-sm leading-none whitespace-nowrap sm:hidden">TTG</span>
-          <span class="font-semibold text-sm leading-none whitespace-nowrap hidden sm:inline truncate">
+          <span
+            class="font-semibold text-sm leading-none whitespace-nowrap sm:hidden"
+            >TTG</span
+          >
+          <span
+            class="font-semibold text-sm md:text-md leading-none whitespace-nowrap hidden sm:inline truncate"
+          >
             Tim Teknologi Global
           </span>
         </a>
@@ -84,7 +91,6 @@ const isActive = (href) => normalizePath(pathname) === normalizePath(href);
           class="order-3 ml-auto bg-linear-to-b from-blue-500 to-blue-400 border border-white/10 rounded-full px-4 py-2 text-sm font-semibold"
           >Contact</a
         >
-
       </div>
     </div>
 
