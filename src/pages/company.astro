@@ -1,23 +1,19 @@
 ---
 import Layout from "../layouts/mainlayout.astro";
+import Hero from "../components/hero.astro";
 ---
 
 <Layout title="Company">
-  <!-- HERO -->
-  <section
-    class="w-full text-center py-20 px-4 bg-linear-to-r from-blue-500 to-blue-400"
-  >
-    <h1 class="text-white text-4xl md:text-5xl font-bold">
-      About Tim Teknologi
-    </h1>
-
-    <p class="text-white/80 mt-4 max-w-xl mx-auto">
-      Connecting talented developers with innovative companies across the globe
-    </p>
-  </section>
+  <!-- hero -->
+  <Hero
+    slot="hero"
+    showSearch={false}
+    title="About Tim Teknologi"
+    subtitle="Connecting talented developers with innovative companies across the globe"
+  />
 
   <!-- OUR STORY -->
-  <section class="bg-gray-100 py-16">
+  <section class="bg-white -mt-20 pt-12 pb-12 rounded-t-3xl relative z-10">
     <div class="w-[90%] mx-auto grid md:grid-cols-2 gap-10 items-center">
       <!-- Text -->
       <div>

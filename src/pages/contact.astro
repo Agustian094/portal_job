@@ -1,0 +1,241 @@
+---
+import MainLayout from "../layouts/mainlayout.astro";
+import {
+  MapPin,
+  Phone,
+  Mail,
+  Clock3,
+  Linkedin,
+  Twitter,
+  Facebook,
+  Instagram,
+} from "lucide-astro";
+---
+
+<MainLayout title="Contact">
+  <!-- ================= HERO ================= -->
+  <section
+    class="bg-linear-to-r from-blue-500 to-blue-400 h-45 md:h-57.5"
+  >
+  </section>
+
+  <!-- ================= CONTACT ================= -->
+  <section class="bg-[#f5f5f5] pb-16 md:pb-24 relative">
+    <div
+      class="w-[92%] max-w-7xl mx-auto grid grid-cols-1 xl:grid-cols-[1.05fr_0.95fr] gap-8 lg:gap-10 -mt-20 md:-mt-28 relative z-10"
+    >
+      <!-- ================= LEFT CARD ================= -->
+      <div
+        class="bg-white rounded-[28px] shadow-[0_10px_30px_rgba(0,0,0,0.08)] p-6 sm:p-8 md:p-10"
+      >
+        <h2 class="text-xl md:text-3xl font-bold text-[#111827] mb-8">
+          Send us a Message
+        </h2>
+
+        <form class="space-y-6">
+          <!-- FULL NAME -->
+          <div>
+            <label class="block text-[15px] font-semibold text-gray-700 mb-3">
+              Full Name
+            </label>
+
+            <input
+              type="text"
+              placeholder="John"
+              class="w-full h-14.5 rounded-[14px] border border-[#D9E0EA] bg-white px-5 text-[16px] text-gray-800 outline-none transition-all duration-300 focus:border-[#4285F4] focus:ring-4 focus:ring-blue-100"
+            />
+          </div>
+
+          <!-- EMAIL -->
+          <div>
+            <label class="block text-[15px] font-semibold text-gray-700 mb-3">
+              Email Address
+            </label>
+
+            <input
+              type="email"
+              placeholder="john.doe@example.com"
+              class="w-full h-14.5 rounded-[14px] border border-[#D9E0EA] bg-white px-5 text-[16px] text-gray-800 outline-none transition-all duration-300 focus:border-[#4285F4] focus:ring-4 focus:ring-blue-100"
+            />
+          </div>
+
+          <!-- PHONE -->
+          <div>
+            <label class="block text-[15px] font-semibold text-gray-700 mb-3">
+              Phone Number
+            </label>
+
+            <input
+              type="text"
+              placeholder="+62 812-3456-7890"
+              class="w-full h-14.5 rounded-[14px] border border-[#D9E0EA] bg-white px-5 text-[16px] text-gray-800 outline-none transition-all duration-300 focus:border-[#4285F4] focus:ring-4 focus:ring-blue-100"
+            />
+          </div>
+
+          <!-- SUBJECT -->
+          <div>
+            <label class="block text-[15px] font-semibold text-gray-700 mb-3">
+              Subject
+            </label>
+
+            <input
+              type="text"
+              placeholder="Your subject"
+              class="w-full h-14.5 rounded-[14px] border border-[#D9E0EA] bg-white px-5 text-[16px] text-gray-800 outline-none transition-all duration-300 focus:border-[#4285F4] focus:ring-4 focus:ring-blue-100"
+            />
+          </div>
+
+          <!-- MESSAGE -->
+          <div>
+            <label class="block text-[15px] font-semibold text-gray-700 mb-3">
+              Message
+            </label>
+
+            <textarea
+              rows="6"
+              placeholder="Tell us how we can help you..."
+              class="w-full rounded-[14px] border border-[#D9E0EA] bg-white px-5 py-4 text-[16px] text-gray-800 outline-none resize-none transition-all duration-300 focus:border-[#4285F4] focus:ring-4 focus:ring-blue-100"
+            ></textarea>
+          </div>
+
+          <!-- BUTTON -->
+          <button
+            type="submit"
+            class="w-full h-11.25 rounded-[14px] bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-[15px] font-semibold transition-all duration-300 shadow-lg shadow-blue-200 hover:scale-[1.01]"
+          >
+            Send Message
+          </button>
+        </form>
+      </div>
+
+      <!-- ================= RIGHT SIDE ================= -->
+      <div class="space-y-8">
+        <!-- CONTACT INFO -->
+        <div
+          class="bg-white rounded-[28px] shadow-[0_10px_30px_rgba(0,0,0,0.08)] p-6 sm:p-8 md:p-10"
+        >
+          <h2 class="text-xl md:text-3xl font-bold text-[#111827] mb-8">
+            Contact Information
+          </h2>
+
+          <div class="space-y-8">
+            <div class="flex items-start gap-5">
+              <div
+                class="w-11 h-11 rounded-xl bg-blue-100 flex items-center justify-center shrink-0"
+              >
+                <MapPin class="text-[#2563EB]" size={24} />
+              </div>
+
+              <div>
+                <h3 class="text-lg font-semibold text-[#111827] mb-2">
+                  Office Address
+                </h3>
+
+                <p class="text-base leading-[1.8] text-gray-600">
+                  Jl Darmo Indah Selatan PP 07 <br />
+                  Surabaya, East Java, Indonesia
+                </p>
+              </div>
+            </div>
+
+            <!-- PHONE -->
+            <div class="flex items-start gap-5">
+              <div
+                class="w-11 h-11 rounded-xl bg-green-100 flex items-center justify-center shrink-0"
+              >
+                <Phone class="text-green-600" size={24} />
+              </div>
+
+              <div>
+                <h3 class="text-lg font-semibold text-[#111827] mb-2">
+                  Phone Number
+                </h3>
+
+                <p class="text-base leading-[1.8] text-gray-600">
+                  +62 823-1123-4567
+                </p>
+              </div>
+            </div>
+
+            <!-- EMAIL -->
+            <div class="flex items-start gap-5">
+              <div
+                class="w-11 h-11 rounded-xl bg-purple-100 flex items-center justify-center shrink-0"
+              >
+                <Mail class="text-purple-600" size={24} />
+              </div>
+
+              <div>
+                <h3 class="text-lg font-semibold text-[#111827] mb-2">
+                  Email Address
+                </h3>
+
+                <p class="text-base leading-[1.8] text-gray-600">
+                  contact@techcorp.com
+                </p>
+              </div>
+            </div>
+
+            <!-- HOURS -->
+            <div class="flex items-start gap-5">
+              <div
+                class="w-11 h-11 rounded-xl bg-orange-100 flex items-center justify-center shrink-0"
+              >
+                <Clock3 class="text-orange-500" size={24} />
+              </div>
+
+              <div>
+                <h3 class="text-lg font-semibold text-[#111827] mb-2">
+                  Business Hours
+                </h3>
+
+                <p class="text-base leading-[1.8] text-gray-600">
+                  Monday - Friday: 9:00 AM - 5:00 PM
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FOLLOW US -->
+        <div
+          class="bg-white rounded-[28px] shadow-[0_10px_30px_rgba(0,0,0,0.08)] p-6 sm:p-8 md:p-10"
+        >
+          <h2 class="text-xl md:text-3xl font-bold text-[#111827] mb-8">
+            Follow Us
+          </h2>
+
+          <div class="flex flex-wrap gap-4">
+            <a
+              href="#"
+              class="w-11 h-11 rounded-xl bg-[#2563EB] flex items-center justify-center text-white transition-all duration-300 hover:scale-105"
+            >
+              <Linkedin size={20} />
+            </a>
+
+            <a
+              href="#"
+              class="w-11 h-11 rounded-xl bg-[#3B82F6] flex items-center justify-center text-white transition-all duration-300 hover:scale-105"
+            >
+              <Twitter size={20} />
+            </a>
+
+            <a
+              href="#"
+              class="w-11 h-11 rounded-xl bg-[#1D4ED8] flex items-center justify-center text-white transition-all duration-300 hover:scale-105"
+            >
+              <Facebook size={20} />
+            </a>
+
+            <a
+              href="#"
+              class="w-11 h-11 rounded-xl bg-[#E1306C] flex items-center justify-center text-white transition-all duration-300 hover:scale-105"
+            >
+              <Instagram size={20} />
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</MainLayout>
