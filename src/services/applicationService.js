@@ -33,10 +33,101 @@ function fetchJson(url) {
   });
 }
 
+function getStageActiveInfo(stage) {
+  if (!stage || typeof stage !== "object") {
+    return { hasIndicator: false, isActive: false };
+  }
+
+  const normalizeIndicator = (value) => {
+    if (value === true || value === 1) return true;
+    if (value === false || value === 0) return false;
+
+    if (typeof value === "string") {
+      const normalized = value.trim().toLowerCase();
+      if (!normalized) return false;
+      if (
+        ["true", "1", "yes", "y", "active", "aktif", "enabled", "published", "on"].includes(
+          normalized,
+        )
+      ) {
+        return true;
+      }
+      if (
+        [
+          "false",
+          "0",
+          "no",
+          "n",
+          "inactive",
+          "nonaktif",
+          "disabled",
+          "draft",
+          "off",
+          "archived",
+          "hidden",
+        ].includes(normalized)
+      ) {
+        return false;
+      }
+    }
+
+    return null;
+  };
+
+  const indicatorKeys = ["is_active", "active", "isActive", "enabled", "is_enabled"];
+
+  let hasIndicator = false;
+  for (const key of indicatorKeys) {
+    if (!Object.prototype.hasOwnProperty.call(stage, key)) continue;
+    const normalized = normalizeIndicator(stage[key]);
+    if (normalized === true) return { hasIndicator: true, isActive: true };
+    if (normalized === false) hasIndicator = true;
+  }
+
+  const rawStatus = String(
+    stage?.status ?? stage?.stage_status ?? stage?.state ?? stage?.visibility ?? "",
+  )
+    .trim()
+    .toLowerCase();
+
+  if (rawStatus) {
+    if (/(inactive|disabled|draft|archived|hidden|off)\b/.test(rawStatus)) {
+      return { hasIndicator: true, isActive: false };
+    }
+    if (/(^|\b)(active|enabled|published|live|on)(\b|$)/.test(rawStatus)) {
+      return { hasIndicator: true, isActive: true };
+    }
+    return { hasIndicator: true, isActive: false };
+  }
+
+  return { hasIndicator, isActive: false };
+}
+
 async function fetchCollectionEntries(collection) {
   const url = collectionGetUrl(collection);
   const data = await fetchJson(url);
   return Array.isArray(data.entries) ? data.entries : [];
+}
+
+export async function getApplications() {
+  try {
+    const entries = await fetchCollectionEntries("t_application");
+    return { entries };
+  } catch (err) {
+    console.error("applicationService.getApplications ->", err.message);
+    return { entries: [] };
+  }
+}
+
+export async function getApplicationById(applicationId) {
+  try {
+    const entries = await fetchCollectionEntries("t_application");
+    const targetId = String(applicationId || "");
+    return entries.find((entry) => String(entry?._id || "") === targetId) || null;
+  } catch (err) {
+    console.error("applicationService.getApplicationById ->", err.message);
+    return null;
+  }
 }
 
 export async function getJobStagesByJobPosting(jobPostingId) {
@@ -45,13 +136,19 @@ export async function getJobStagesByJobPosting(jobPostingId) {
     (entry) => String(entry?.header?._id || "") === String(jobPostingId || ""),
   );
 
-  filtered.sort((left, right) => {
+  const activeInfos = filtered.map((stage) => getStageActiveInfo(stage));
+  const shouldFilterActive = activeInfos.some((info) => info.hasIndicator);
+  const activeOnly = shouldFilterActive
+    ? filtered.filter((_, index) => activeInfos[index].isActive)
+    : filtered;
+
+  activeOnly.sort((left, right) => {
     const leftOrder = Number(left?.stage_order || 0);
     const rightOrder = Number(right?.stage_order || 0);
     return leftOrder - rightOrder;
   });
 
-  return filtered;
+  return activeOnly;
 }
 
 export async function getInitialJobStage(jobPostingId) {
