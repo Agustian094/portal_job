@@ -101,11 +101,11 @@ const jobs = ((response?.entries ?? []) as JobPosting[]).filter(
               Application Tracking
             </p>
             <h3 class="mt-2 text-2xl font-bold text-slate-900">
-              Paste URL to Start Tracking
+              Paste Application ID to Start Tracking
             </h3>
             <p class="mt-2 text-sm text-slate-500">
-              Enter the tracking link you received so the stage application can
-              be opened from here.
+              Enter the application ID you received so the stage application
+              can be opened from here.
             </p>
           </div>
 
@@ -125,14 +125,14 @@ const jobs = ((response?.entries ?? []) as JobPosting[]).filter(
               for="trackingUrl"
               class="mb-2 block text-sm font-medium text-slate-700"
             >
-              URL tracking
+              Application ID
             </label>
             <input
               id="trackingUrl"
               name="trackingUrl"
-              type="url"
-              inputmode="url"
-              placeholder="https://example.com/track/abc123"
+              type="text"
+              inputmode="text"
+              placeholder="Paste application ID here"
               class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
               required
             />
@@ -199,18 +199,30 @@ const jobs = ((response?.entries ?? []) as JobPosting[]).filter(
       formElement.reset();
     };
 
-    const normalizeTrackingUrl = (value) => {
+    const normalizeApplicationId = (value) => {
       const raw = String(value || "").trim();
       if (!raw) return null;
 
-      const withProtocol = /^[a-zA-Z][a-zA-Z\d+\-.]*:\/\//.test(raw)
-        ? raw
-        : `https://${raw}`;
+      if (/^[A-Za-z0-9_-]+$/.test(raw)) {
+        return raw;
+      }
 
       try {
-        return new URL(withProtocol).toString();
+        const withProtocol = /^[a-zA-Z][a-zA-Z\d+\-.]*:\/\//.test(raw)
+          ? raw
+          : `https://${raw}`;
+        const parsedUrl = new URL(withProtocol);
+        const segments = parsedUrl.pathname.split("/").filter(Boolean);
+        const candidate =
+          segments[segments.length - 1] ||
+          parsedUrl.searchParams.get("application_id") ||
+          "";
+
+        return String(candidate).trim() || null;
       } catch {
-        return null;
+        const cleaned = raw.replace(/[?#].*$/, "").replace(/^\/+|\/+$/g, "");
+        const segments = cleaned.split("/").filter(Boolean);
+        return segments[segments.length - 1] || null;
       }
     };
 
@@ -236,16 +248,16 @@ const jobs = ((response?.entries ?? []) as JobPosting[]).filter(
     formElement.addEventListener("submit", (event) => {
       event.preventDefault();
 
-      const normalizedUrl = normalizeTrackingUrl(urlInputElement.value);
+      const applicationId = normalizeApplicationId(urlInputElement.value);
 
-      if (!normalizedUrl) {
-        urlInputElement.setCustomValidity("Masukkan URL tracking yang valid.");
+      if (!applicationId) {
+        urlInputElement.setCustomValidity("Masukkan application ID yang valid.");
         urlInputElement.reportValidity();
         return;
       }
 
       urlInputElement.setCustomValidity("");
-      window.location.href = normalizedUrl;
+      window.location.href = `/stage/${encodeURIComponent(applicationId)}`;
     });
   });
 </script>

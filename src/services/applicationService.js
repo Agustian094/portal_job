@@ -158,10 +158,14 @@ export async function getInitialJobStage(jobPostingId) {
 
 export async function submitApplication(formData) {
   const url = `${BASE_URL}collections/save/t_application?token=${TOKEN}`;
-  // Convert FormData -> plain object for JSON payload
+  const entries = Array.from(formData.entries());
+  const portfolioFile = entries.find(([, value]) => value instanceof File || value instanceof Blob)?.[1] || null;
+
+  // Convert FormData -> plain object for JSON payload.
   const obj = {};
-  for (const key of formData.keys()) {
-    obj[key] = formData.get(key);
+  for (const [key, value] of entries) {
+    if (value instanceof File || value instanceof Blob) continue;
+    obj[key] = value;
   }
 
   const jobPostingId = String(obj.job_posting || "").trim();
@@ -204,24 +208,35 @@ export async function submitApplication(formData) {
     }
   }
 
+  if (portfolioFile) {
+    const assetUploadForm = new FormData();
+    assetUploadForm.append("files", portfolioFile, portfolioFile.name);
+
+    const assetUploadRes = await fetch(`${BASE_URL}cockpit/addAssets?token=${TOKEN}`, {
+      method: "POST",
+      body: assetUploadForm,
+    });
+
+    if (!assetUploadRes.ok) {
+      const text = await assetUploadRes.text();
+      throw new Error(`Gagal upload portofolio: ${assetUploadRes.status} ${text}`);
+    }
+
+    const assetUploadJson = await assetUploadRes.json();
+    const uploadedAsset = Array.isArray(assetUploadJson?.assets) ? assetUploadJson.assets[0] : null;
+
+    if (uploadedAsset?.path) {
+      obj.portofolio = uploadedAsset.path;
+    }
+  }
+
   const payload = { data: obj };
 
-  // Try JSON first (many Cockpit-like APIs accept JSON bodies)
   let res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json", Accept: "application/json" },
     body: JSON.stringify(payload),
   });
-
-  // If the JSON approach returns 404, try a multipart/form-data fallback
-  if (res.status === 404) {
-    res = await fetch(url, {
-      method: "POST",
-      body: formData,
-    });
-
-    // Fallback fallback response status is logged
-  }
 
   if (!res.ok) {
     const text = await res.text();
