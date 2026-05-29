@@ -5,7 +5,6 @@ export const prerender = false;
 export async function POST({ request }) {
   try {
     const formData = await request.formData();
-    console.log("[submit-application] Received formData keys:", Array.from(formData.keys()));
 
     const formatDateOnly = (date = new Date()) => date.toISOString().slice(0, 10);
 
@@ -17,9 +16,7 @@ export async function POST({ request }) {
       formData.set("stage_notes", "");
     }
 
-    console.log("[submit-application] Sending to Cockpit with keys:", Array.from(formData.keys()));
     const result = await submitApplication(formData);
-    console.log("[submit-application] Success:", result);
 
     return new Response(JSON.stringify({ ok: true, result }), {
       status: 200,

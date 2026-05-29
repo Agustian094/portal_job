@@ -86,9 +86,6 @@ const cities = (cityResponse && cityResponse.entries) || [];
       const portfolioPreviewName = document.getElementById(
         "portfolio-preview-name",
       );
-      const portfolioPreviewType = document.getElementById(
-        "portfolio-preview-type",
-      );
       const portfolioPreviewBadge = document.getElementById(
         "portfolio-preview-badge",
       );
@@ -159,6 +156,26 @@ const cities = (cityResponse && cityResponse.entries) || [];
           province.prov_id || province._id || province.id || "",
         ]),
       );
+      const portfolioMaxSizeBytes = 5 * 1024 * 1024;
+
+      function getPortfolioValidationError(file) {
+        if (!file) return "";
+
+        const fileName = String(file.name || "").toLowerCase();
+        const fileType = String(file.type || "").toLowerCase();
+        const isPdf =
+          fileType === "application/pdf" || fileName.endsWith(".pdf");
+
+        if (!isPdf) {
+          return "Portofolio hanya boleh berupa file PDF.";
+        }
+
+        if (typeof file.size === "number" && file.size > portfolioMaxSizeBytes) {
+          return "Ukuran file portofolio maksimal 5 MB.";
+        }
+
+        return "";
+      }
 
       function formatDateOnly(date = new Date()) {
         return date.toISOString().slice(0, 10);
@@ -183,38 +200,25 @@ const cities = (cityResponse && cityResponse.entries) || [];
       }
 
       function updatePortfolioPreview(file) {
-        if (
-          !portfolioPreview ||
-          !portfolioPreviewName ||
-          !portfolioPreviewType
-        ) {
+        if (!portfolioPreview || !portfolioPreviewName) {
           return;
         }
 
         if (!file) {
           portfolioPreview.classList.add("hidden");
           portfolioPreviewName.textContent = "";
-          portfolioPreviewType.textContent = "";
           if (portfolioPreviewBadge)
             portfolioPreviewBadge.textContent = "No file selected";
           if (portfolioPreviewIcon) portfolioPreviewIcon.textContent = "";
           return;
         }
 
-        const typeLabel = getFileTypeLabel(file);
         const fileName = file.name || "Untitled file";
-        const fileSize =
-          typeof file.size === "number"
-            ? `${(file.size / (1024 * 1024)).toFixed(2)} MB`
-            : "";
 
         if (portfolioPreviewBadge)
           portfolioPreviewBadge.textContent = "File selected";
-        if (portfolioPreviewIcon) portfolioPreviewIcon.textContent = "FILE";
+        if (portfolioPreviewIcon) portfolioPreviewIcon.textContent = "PDF";
         portfolioPreviewName.textContent = fileName;
-        portfolioPreviewType.textContent = fileSize
-          ? `${typeLabel} · ${fileSize}`
-          : typeLabel;
         portfolioPreview.classList.remove("hidden");
       }
 
@@ -228,6 +232,16 @@ const cities = (cityResponse && cityResponse.entries) || [];
       if (portfolioInput) {
         portfolioInput.addEventListener("change", () => {
           const file = portfolioInput.files?.[0] || null;
+          const validationError = getPortfolioValidationError(file);
+
+          if (validationError) {
+            portfolioInput.setCustomValidity(validationError);
+            portfolioInput.reportValidity();
+            clearPortfolioSelection();
+            return;
+          }
+
+          portfolioInput.setCustomValidity("");
           updatePortfolioPreview(file);
         });
       }
@@ -438,7 +452,18 @@ const cities = (cityResponse && cityResponse.entries) || [];
 
           // file
           const file = portfolioInput?.files?.[0];
-          if (file) fd.append("portofolio", file, file.name);
+          if (file) {
+            const validationError = getPortfolioValidationError(file);
+            if (validationError) {
+              portfolioInput?.setCustomValidity(validationError);
+              portfolioInput?.reportValidity();
+              if (submitBtn) submitBtn.disabled = false;
+              return;
+            }
+
+            portfolioInput?.setCustomValidity("");
+            fd.append("portofolio", file, file.name);
+          }
 
           // additional fields
           fd.append("date", formatDateOnly());
@@ -712,7 +737,7 @@ const cities = (cityResponse && cityResponse.entries) || [];
               type="file"
               name="portofolio"
               id="portfolio"
-              accept=".pdf,.doc,.docx"
+              accept=".pdf,application/pdf"
               class="hidden"
             />
 
@@ -738,7 +763,7 @@ const cities = (cityResponse && cityResponse.entries) || [];
                 class="mt-4 inline-flex items-center gap-2 text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded-full"
               >
                 <FileText size={14} />
-                PDF, DOC, DOCX (max 5MB)
+                PDF (max 5MB)
               </div>
             </label>
 
@@ -749,7 +774,7 @@ const cities = (cityResponse && cityResponse.entries) || [];
               <div class="flex items-start gap-4">
                 <div
                   id="portfolio-preview-icon"
-                  class="w-12 h-12 rounded-xl bg-white flex items-center justify-center text-[10px] font-bold tracking-[0.24em] text-blue-600 border border-blue-100 flex-shrink-0"
+                  class="w-12 h-12 rounded-xl bg-white flex items-center justify-center text-[10px] font-bold tracking-[0.24em] text-blue-600 border border-blue-100 flex-none"
                 >
                 </div>
 
@@ -757,12 +782,6 @@ const cities = (cityResponse && cityResponse.entries) || [];
                   <p
                     id="portfolio-preview-name"
                     class="mt-2 text-sm font-semibold text-slate-800 truncate"
-                  >
-                  </p>
-
-                  <p
-                    id="portfolio-preview-type"
-                    class="mt-1 text-sm text-slate-500 break-words"
                   >
                   </p>
                 </div>

@@ -42,7 +42,7 @@ function parseOptions(optString: string | undefined): string[] {
 
 <MainLayout title="Question Form">
   <!-- ================= HERO ================= -->
-  <section class="bg-gradient-to-r from-blue-500 to-blue-400 py-14">
+  <section class="bg-linear-to-r from-blue-500 to-blue-400 py-14">
     <div class="w-[90%] max-w-6xl mx-auto text-white">
       <div class="flex items-center gap-3 mb-3">
         <div class="bg-white/20 p-3 rounded-xl backdrop-blur-sm">
@@ -125,7 +125,7 @@ function parseOptions(optString: string | undefined): string[] {
                 <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition">
                   <h2 class="text-2xl font-semibold text-slate-800 mb-6">
                     {q.question}
-                    <span class="text-sm text-gray-500 ml-2"></span>
+                    <span class="text-sm text-gray-500 ml-2" />
                   </h2>
                   <div class="space-y-4">
                     {opts.map((option: string) => (
@@ -213,6 +213,29 @@ function parseOptions(optString: string | undefined): string[] {
       const form = document.getElementById("questionForm");
       const appIdInput = document.getElementById("application_id_input");
 
+      if (questions.length === 0) {
+        const params = new URLSearchParams(window.location.search);
+        const currentPathParts = window.location.pathname
+          .split("/")
+          .filter(Boolean);
+        const jobId = currentPathParts[currentPathParts.length - 1] || "";
+        const savedAid =
+          params.get("application_id") ||
+          params.get("applicationId") ||
+          params.get("application") ||
+          localStorage.getItem("last_application_id") ||
+          "";
+        const qs = new URLSearchParams();
+        if (jobId) qs.set("job_id", jobId);
+        if (savedAid) qs.set("application_id", savedAid);
+
+        const targetUrl = qs.toString()
+          ? `/succes?${qs.toString()}`
+          : "/succes";
+        window.location.replace(targetUrl);
+        return;
+      }
+
       // try auto-fill application_id from query param
       try {
         const params = new URLSearchParams(window.location.search);
@@ -223,6 +246,20 @@ function parseOptions(optString: string | undefined): string[] {
         if (aid && appIdInput) {
           appIdInput.value = aid;
           localStorage.setItem("last_application_id", aid);
+          // Remove application id from URL to avoid exposing it
+          try {
+            const url = new URL(window.location.href);
+            url.searchParams.delete("application_id");
+            url.searchParams.delete("applicationId");
+            url.searchParams.delete("application");
+            const newUrl =
+              url.pathname +
+              (url.search ? `?${url.searchParams.toString()}` : "") +
+              url.hash;
+            window.history.replaceState({}, document.title, newUrl);
+          } catch (e) {
+            // ignore
+          }
         } else if (appIdInput) {
           const savedAid = localStorage.getItem("last_application_id") || "";
           if (savedAid) appIdInput.value = savedAid;

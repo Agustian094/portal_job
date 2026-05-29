@@ -33,6 +33,40 @@ function fetchJson(url) {
   });
 }
 
+function isFileLike(value) {
+  if (!value || typeof value !== "object") return false;
+
+  const hasFileShape = typeof value.name === "string" && typeof value.size === "number";
+  const hasBinaryMethods =
+    typeof value.arrayBuffer === "function" || typeof value.stream === "function";
+
+  return hasFileShape && hasBinaryMethods;
+}
+
+function getUploadedAssetPath(uploadResponse) {
+  const directCandidates = [
+    uploadResponse?.path,
+    uploadResponse?.url,
+    uploadResponse?.asset?.path,
+    uploadResponse?.asset?.url,
+  ];
+
+  for (const candidate of directCandidates) {
+    if (candidate && String(candidate).trim()) {
+      return String(candidate).trim();
+    }
+  }
+
+  const assetList = Array.isArray(uploadResponse?.assets)
+    ? uploadResponse.assets
+    : Array.isArray(uploadResponse?.result?.assets)
+      ? uploadResponse.result.assets
+      : [];
+
+  const firstAsset = assetList.find((asset) => asset && typeof asset === "object") || null;
+  return String(firstAsset?.path || firstAsset?.url || "").trim();
+}
+
 function getStageActiveInfo(stage) {
   if (!stage || typeof stage !== "object") {
     return { hasIndicator: false, isActive: false };
@@ -159,7 +193,7 @@ export async function getInitialJobStage(jobPostingId) {
 export async function submitApplication(formData) {
   const url = `${BASE_URL}collections/save/t_application?token=${TOKEN}`;
   const entries = Array.from(formData.entries());
-  const portfolioFile = entries.find(([, value]) => value instanceof File || value instanceof Blob)?.[1] || null;
+  const portfolioFile = entries.find(([, value]) => isFileLike(value))?.[1] || null;
 
   // Convert FormData -> plain object for JSON payload.
   const obj = {};
@@ -210,23 +244,39 @@ export async function submitApplication(formData) {
 
   if (portfolioFile) {
     const assetUploadForm = new FormData();
-    assetUploadForm.append("files", portfolioFile, portfolioFile.name);
+    const fileName = String(portfolioFile.name || "portfolio").trim() || "portfolio";
+    assetUploadForm.append("files[]", portfolioFile, fileName);
 
-    const assetUploadRes = await fetch(`${BASE_URL}cockpit/addAssets?token=${TOKEN}`, {
-      method: "POST",
-      body: assetUploadForm,
-    });
+    let assetUploadRes;
+    try {
+      assetUploadRes = await fetch(`${BASE_URL}cockpit/addAssets?token=${TOKEN}`, {
+        method: "POST",
+        body: assetUploadForm,
+      });
+    } catch (err) {
+      throw err;
+    }
 
     if (!assetUploadRes.ok) {
       const text = await assetUploadRes.text();
       throw new Error(`Gagal upload portofolio: ${assetUploadRes.status} ${text}`);
     }
 
-    const assetUploadJson = await assetUploadRes.json();
-    const uploadedAsset = Array.isArray(assetUploadJson?.assets) ? assetUploadJson.assets[0] : null;
+    let assetUploadJson = null;
+    try {
+      assetUploadJson = await assetUploadRes.json();
+    } catch (err) {
+      const text = await assetUploadRes.text().catch(() => "<no-text>");
+      throw new Error("Invalid JSON from asset upload: " + String(err.message || err));
+    }
 
-    if (uploadedAsset?.path) {
-      obj.portofolio = uploadedAsset.path;
+    const uploadedAssetPath = getUploadedAssetPath(assetUploadJson);
+
+    if (uploadedAssetPath) {
+      obj.portofolio =
+        Array.isArray(assetUploadJson?.assets) && assetUploadJson.assets[0]
+          ? assetUploadJson.assets[0]
+          : uploadedAssetPath;
     }
   }
 
@@ -237,6 +287,8 @@ export async function submitApplication(formData) {
     headers: { "Content-Type": "application/json", Accept: "application/json" },
     body: JSON.stringify(payload),
   });
+
+  // proceed to save application
 
   if (!res.ok) {
     const text = await res.text();

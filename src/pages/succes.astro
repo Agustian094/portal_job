@@ -123,7 +123,7 @@ const appliedJobTitle = String(job?.title || "Posisi yang dilamar");
             <div class="mt-3 space-y-2 text-slate-600 leading-relaxed">
               <p>Go back to the job page and click the application button.</p>
 
-              <p>Paste the application ID and click ok.</p>
+              <p>Paste the application ID and click Start Tracking.</p>
 
               <p>Then you will see the status of your application.</p>
             </div>
@@ -193,3 +193,29 @@ const appliedJobTitle = String(job?.title || "Posisi yang dilamar");
 </MainLayout>
 <!-- josjis -->
 <!-- baru -->
+
+<script>
+  // Remove sensitive query params from address bar without reloading
+  try {
+    if (window && window.history && window.location) {
+      const url = new URL(window.location.href);
+      let changed = false;
+      ["application_id", "applicationId", "application"].forEach((k) => {
+        if (url.searchParams.has(k)) {
+          url.searchParams.delete(k);
+          changed = true;
+        }
+      });
+
+      if (changed) {
+        const newUrl =
+          url.pathname +
+          (url.search ? `?${url.searchParams.toString()}` : "") +
+          url.hash;
+        window.history.replaceState({}, document.title, newUrl);
+      }
+    }
+  } catch (e) {
+    // ignore
+  }
+</script>

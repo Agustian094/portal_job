@@ -16,8 +16,8 @@ export async function POST({ request }) {
     }
 
     if (answers.length === 0) {
-      return new Response(JSON.stringify({ ok: false, error: "answers array is empty" }), {
-        status: 400,
+      return new Response(JSON.stringify({ ok: true, results: [] }), {
+        status: 200,
         headers: { "Content-Type": "application/json" },
       });
     }
