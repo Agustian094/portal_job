@@ -22,18 +22,18 @@ const appliedJobTitle = String(job?.title || "Posisi yang dilamar");
 
 <MainLayout title="Application Success">
   <!-- ================= HERO ================= -->
-  <section class="bg-linear-to-r from-blue-500 to-blue-400 h-22.5"></section>
+  <section class="success-hero bg-linear-to-r from-blue-500 to-blue-400 h-22.5"></section>
 
   <!-- ================= CONTENT ================= -->
-  <section class="bg-[#f5f7fb] min-h-screen py-16">
+  <section class="success-content bg-[#f5f7fb] min-h-screen py-16">
     <div class="w-[90%] max-w-xl mx-auto text-center">
       <!-- SUCCESS ICON -->
-      <div class="flex justify-center">
+      <div class="success-icon-wrap flex justify-center">
         <div
-          class="w-28 h-28 rounded-full bg-white shadow-xl flex items-center justify-center"
+          class="success-icon w-28 h-28 rounded-full bg-white shadow-xl flex items-center justify-center"
         >
           <div
-            class="w-16 h-16 rounded-full bg-blue-500 flex items-center justify-center"
+            class="success-icon-core w-16 h-16 rounded-full bg-blue-500 flex items-center justify-center"
           >
             <Check class="text-white" size={38} strokeWidth={3} />
           </div>
@@ -41,24 +41,24 @@ const appliedJobTitle = String(job?.title || "Posisi yang dilamar");
       </div>
 
       <!-- TITLE -->
-      <div class="mt-8">
-        <h1 class="text-3xl font-bold text-slate-800">
+      <div class="success-title-wrap mt-8">
+        <h1 class="success-title text-3xl font-bold text-slate-800">
           Application Submitted!
         </h1>
 
-        <p class="text-slate-500 mt-4 text-lg">
+        <p class="success-subtitle text-slate-500 mt-4 text-lg">
           Your application for this position has been successfully submitted.
         </p>
       </div>
 
       <!-- JOB INFO -->
-      <div class="mt-10">
-        <h2 class="text-xl font-bold text-slate-800">
+      <div class="success-job mt-10">
+        <h2 class="success-job-title text-xl font-bold text-slate-800">
           {appliedJobTitle}
         </h2>
 
         <div
-          class="flex items-center justify-center gap-3 mt-4 text-slate-500 text-base"
+          class="success-meta flex items-center justify-center gap-3 mt-4 text-slate-500 text-base"
         >
           <div class="flex items-center gap-1.5">
             <BriefcaseBusiness size={16} />
@@ -74,7 +74,7 @@ const appliedJobTitle = String(job?.title || "Posisi yang dilamar");
 
       <!-- WARNING BOX -->
       <div
-        class="mt-10 bg-[#eef3ff] border border-[#d7e1ff] rounded-3xl p-6 text-left shadow-sm"
+        class="success-warning mt-10 bg-[#eef3ff] border border-[#d7e1ff] rounded-3xl p-6 text-left shadow-sm"
       >
         <div class="flex items-start gap-3">
           <TriangleAlert class="text-red-500 mt-0.5 shrink-0" size={22} />
@@ -110,7 +110,7 @@ const appliedJobTitle = String(job?.title || "Posisi yang dilamar");
 
       <!-- INFO BOX -->
       <div
-        class="mt-6 bg-[#eef3ff] border border-[#d7e1ff] rounded-3xl p-6 text-left shadow-sm"
+        class="success-info mt-6 bg-[#eef3ff] border border-[#d7e1ff] rounded-3xl p-6 text-left shadow-sm"
       >
         <div class="flex items-start gap-3">
           <Info class="text-blue-500 mt-0.5 shrink-0" size={22} />
@@ -132,10 +132,10 @@ const appliedJobTitle = String(job?.title || "Posisi yang dilamar");
       </div>
 
       <!-- BUTTON -->
-      <div class="mt-10">
+      <div class="success-button-wrap mt-10">
         <a
           href="/jobs"
-          class="inline-flex items-center justify-center bg-blue-500 hover:bg-blue-600 transition text-white font-medium px-8 py-4 rounded-full shadow-lg shadow-blue-200"
+          class="success-button inline-flex items-center justify-center bg-blue-500 hover:bg-blue-600 transition text-white font-medium px-8 py-4 rounded-full shadow-lg shadow-blue-200"
         >
           Go Back to Job Page
         </a>
@@ -191,6 +191,119 @@ const appliedJobTitle = String(job?.title || "Posisi yang dilamar");
     });
   </script>
 </MainLayout>
+
+<style>
+  .success-hero,
+  .success-content,
+  .success-icon-wrap,
+  .success-icon,
+  .success-icon-core,
+  .success-title-wrap,
+  .success-title,
+  .success-subtitle,
+  .success-job,
+  .success-job-title,
+  .success-meta,
+  .success-warning,
+  .success-info,
+  .success-button-wrap,
+  .success-button {
+    opacity: 0;
+    transform: translateY(14px);
+    animation: successFadeUp 700ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    will-change: opacity, transform;
+  }
+
+  .success-hero {
+    animation-delay: 0ms;
+  }
+
+  .success-content {
+    animation-delay: 80ms;
+  }
+
+  .success-icon-wrap {
+    animation-delay: 160ms;
+  }
+
+  .success-icon {
+    animation-delay: 220ms;
+  }
+
+  .success-icon-core {
+    animation-delay: 300ms;
+  }
+
+  .success-title-wrap {
+    animation-delay: 380ms;
+  }
+
+  .success-title {
+    animation-delay: 460ms;
+  }
+
+  .success-subtitle {
+    animation-delay: 540ms;
+  }
+
+  .success-job {
+    animation-delay: 620ms;
+  }
+
+  .success-job-title,
+  .success-meta {
+    animation-delay: 700ms;
+  }
+
+  .success-warning {
+    animation-delay: 780ms;
+  }
+
+  .success-info {
+    animation-delay: 860ms;
+  }
+
+  .success-button-wrap {
+    animation-delay: 940ms;
+  }
+
+  .success-button {
+    animation-delay: 1020ms;
+  }
+
+  @keyframes successFadeUp {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .success-hero,
+    .success-content,
+    .success-icon-wrap,
+    .success-icon,
+    .success-icon-core,
+    .success-title-wrap,
+    .success-title,
+    .success-subtitle,
+    .success-job,
+    .success-job-title,
+    .success-meta,
+    .success-warning,
+    .success-info,
+    .success-button-wrap,
+    .success-button {
+      opacity: 1;
+      transform: none;
+      animation: none;
+    }
+  }
+</style>
 <!-- josjis -->
 <!-- baru -->
 

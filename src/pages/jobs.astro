@@ -38,6 +38,8 @@ const jobs = ((response?.entries ?? []) as JobPosting[]).filter(
         type="button"
         id="applicationTrackingButton"
         class="absolute -top-8 left-1/2 -translate-x-1/2 bg-white rounded-2xl shadow-lg border border-gray-100 px-7 py-4 flex items-center gap-4 z-20 transition hover:-translate-y-0.5 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        data-reveal
+        data-reveal-delay="0"
       >
         <div
           class="w-5 h-5 rounded-xl bg-gray-100 flex items-center justify-center"
@@ -56,24 +58,28 @@ const jobs = ((response?.entries ?? []) as JobPosting[]).filter(
       </button>
 
       <!-- Heading -->
-      <div class="mb-6 space-y-2">
+      <div class="mb-6 space-y-2" data-reveal data-reveal-delay="70">
         <h2 class="text-2xl font-bold text-slate-900">Open Positions</h2>
       </div>
 
       <!-- ================= JOB LIST ================= -->
-      <div class="flex flex-col gap-4">
+      <div class="flex flex-col gap-4" data-job-reveal-group>
         {
           jobs.length === 0 ? (
-            <p class="text-slate-500">job vacancies are still not available.</p>
+            <p class="text-slate-500" data-reveal data-reveal-delay="120">
+              job vacancies are still not available.
+            </p>
           ) : (
             jobs.map((job: JobPosting) => (
-              <JobCard
-                id={job._id}
-                title={job.title}
-                slug={job.slug}
-                summary={job.summary}
-                description={job.description}
-              />
+              <div data-reveal data-job-reveal-item>
+                <JobCard
+                  id={job._id}
+                  title={job.title}
+                  slug={job.slug}
+                  summary={job.summary}
+                  description={job.description}
+                />
+              </div>
             ))
           )
         }
@@ -259,5 +265,67 @@ const jobs = ((response?.entries ?? []) as JobPosting[]).filter(
       urlInputElement.setCustomValidity("");
       window.location.href = `/stage/${encodeURIComponent(applicationId)}`;
     });
+  });
+</script>
+
+<script>
+  // @ts-nocheck
+  document.addEventListener("DOMContentLoaded", () => {
+    const singleRevealItems = Array.from(
+      document.querySelectorAll("[data-reveal]:not([data-job-reveal-item])"),
+    );
+    const group = document.querySelector("[data-job-reveal-group]");
+    const items = group
+      ? Array.from(group.querySelectorAll("[data-job-reveal-item]"))
+      : [];
+
+    if (!singleRevealItems.length && !group) return;
+
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduceMotion || !("IntersectionObserver" in window)) {
+      singleRevealItems.forEach((item) => item.classList.add("is-visible"));
+      items.forEach((item) => item.classList.add("is-visible"));
+      return;
+    }
+
+    singleRevealItems.forEach((item) => {
+      const delay = Number(item.getAttribute("data-reveal-delay") || 0);
+      item.style.transitionDelay = `${delay}ms`;
+    });
+
+    const singleObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add("is-visible");
+          singleObserver.unobserve(entry.target);
+        });
+      },
+      { threshold: 0.16, rootMargin: "0px 0px -10% 0px" },
+    );
+
+    singleRevealItems.forEach((item) => singleObserver.observe(item));
+
+    if (!group || !items.length) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+
+          const stagger = 130;
+          items.forEach((item, index) => {
+            const delay = index * stagger;
+            item.style.transitionDelay = `${delay}ms`;
+            requestAnimationFrame(() => item.classList.add("is-visible"));
+          });
+
+          observer.unobserve(entry.target);
+        });
+      },
+      { threshold: 0.16, rootMargin: "0px 0px -10% 0px" },
+    );
+
+    observer.observe(group);
   });
 </script>

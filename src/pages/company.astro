@@ -13,10 +13,14 @@ import Hero from "../components/hero.astro";
   />
 
   <!-- OUR STORY -->
-  <section class="bg-white -mt-20 pt-12 pb-12 rounded-t-3xl relative z-10">
+  <section
+    class="bg-white -mt-20 pt-12 pb-12 rounded-t-3xl relative z-10"
+    data-reveal
+    data-reveal-delay="0"
+  >
     <div class="w-[90%] mx-auto grid md:grid-cols-2 gap-10 items-center">
       <!-- Text -->
-      <div>
+      <div data-reveal data-reveal-delay="80">
         <h2 class="text-3xl font-bold text-gray-800 mb-4">Our Story</h2>
 
         <p class="text-gray-600 mb-4 leading-relaxed">
@@ -31,7 +35,7 @@ import Hero from "../components/hero.astro";
       </div>
 
       <!-- Image -->
-      <div>
+      <div data-reveal data-reveal-delay="160">
         <img
           src="/images/company.png"
           alt="Company"
@@ -43,9 +47,19 @@ import Hero from "../components/hero.astro";
 
   <!-- TEAM -->
   <section class="bg-gray-100 py-16 text-center">
-    <h2 class="text-3xl font-bold text-gray-800">Meet Our Team</h2>
+    <h2
+      class="text-3xl font-bold text-gray-800"
+      data-reveal
+      data-reveal-delay="40"
+    >
+      Meet Our Team
+    </h2>
 
-    <p class="text-gray-500 mt-2 max-w-xl mx-auto">
+    <p
+      class="text-gray-500 mt-2 max-w-xl mx-auto"
+      data-reveal
+      data-reveal-delay="100"
+    >
       A diverse group of passionate professionals dedicated to revolutionizing
       tech recruitment.
     </p>
@@ -53,9 +67,10 @@ import Hero from "../components/hero.astro";
     <!-- TEAM GRID -->
     <div
       class="w-[90%] mx-auto mt-10 grid sm:grid-cols-2 md:grid-cols-4 gap-10"
+      data-reveal-group
     >
       <!-- Member -->
-      <div>
+      <div data-reveal data-reveal-member>
         <img
           src="/images/img.png"
           class="w-24 h-24 mx-auto rounded-full object-cover"
@@ -67,7 +82,7 @@ import Hero from "../components/hero.astro";
         </p>
       </div>
 
-      <div>
+      <div data-reveal data-reveal-member>
         <img
           src="/images/img (2).png"
           class="w-24 h-24 mx-auto rounded-full object-cover"
@@ -79,7 +94,7 @@ import Hero from "../components/hero.astro";
         </p>
       </div>
 
-      <div>
+      <div data-reveal data-reveal-member>
         <img
           src="/images/img (3).png"
           class="w-24 h-24 mx-auto rounded-full object-cover"
@@ -91,7 +106,7 @@ import Hero from "../components/hero.astro";
         </p>
       </div>
 
-      <div>
+      <div data-reveal data-reveal-member>
         <img
           src="/images/img (1).png"
           class="w-24 h-24 mx-auto rounded-full object-cover"
@@ -104,4 +119,67 @@ import Hero from "../components/hero.astro";
       </div>
     </div>
   </section>
+
+  <script is:inline>
+    (() => {
+      const singleReveal = Array.from(
+        document.querySelectorAll("[data-reveal]:not([data-reveal-member])"),
+      );
+      const groups = Array.from(
+        document.querySelectorAll("[data-reveal-group]"),
+      );
+
+      const reduceMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
+
+      if (reduceMotion || !("IntersectionObserver" in window)) {
+        singleReveal.forEach((item) => item.classList.add("is-visible"));
+        groups.forEach((g) => {
+          const members = Array.from(
+            g.querySelectorAll("[data-reveal-member]"),
+          );
+          members.forEach((m) => m.classList.add("is-visible"));
+        });
+        return;
+      }
+
+      singleReveal.forEach((item) => {
+        const delay = Number(item.getAttribute("data-reveal-delay") || 0);
+        item.style.transitionDelay = `${delay}ms`;
+      });
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+
+            const target = entry.target;
+            if (target.hasAttribute("data-reveal-group")) {
+              const members = Array.from(
+                target.querySelectorAll("[data-reveal-member]"),
+              );
+              const stagger = 120;
+              members.forEach((m, idx) => {
+                // set transition delay so CSS transition staggers too
+                m.style.transitionDelay = `${idx * stagger}ms`;
+                setTimeout(() => m.classList.add("is-visible"), idx * stagger);
+              });
+              observer.unobserve(target);
+              return;
+            }
+
+            const delay = Number(target.getAttribute("data-reveal-delay") || 0);
+            target.style.transitionDelay = `${delay}ms`;
+            target.classList.add("is-visible");
+            observer.unobserve(target);
+          });
+        },
+        { threshold: 0.18, rootMargin: "0px 0px -10% 0px" },
+      );
+
+      singleReveal.forEach((item) => observer.observe(item));
+      groups.forEach((g) => observer.observe(g));
+    })();
+  </script>
 </Layout>

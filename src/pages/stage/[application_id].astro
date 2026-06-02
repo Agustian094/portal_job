@@ -261,45 +261,45 @@ const stageItems = visibleStages.map((stage: any, index: number) => {
 
 <MainLayout title="Application Journey">
 	<!-- ================= HEADER ================= -->
-	<section class="bg-gradient-to-r from-blue-500 to-blue-400 h-[90px]"></section>
+	<section class="stage-hero bg-gradient-to-r from-blue-500 to-blue-400 h-[90px]"></section>
 
 	<!-- ================= CONTENT ================= -->
-	<section class="bg-white -mt-12 rounded-t-[36px] pt-12 pb-20">
+	<section class="stage-content bg-white -mt-12 rounded-t-[36px] pt-12 pb-20">
 		<div class="w-[90%] max-w-4xl mx-auto text-center">
 			<span
-				class="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.3em] text-emerald-700"
+				class="stage-pill inline-flex items-center gap-2 rounded-full bg-emerald-100 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.3em] text-emerald-700"
 			>
 				Application Journey
 			</span>
 
 			{applicantName ? (
-				<p class="mt-4 text-sm font-semibold text-slate-500">
+				<p class="stage-name mt-4 text-sm font-semibold text-slate-500">
 					{applicantName}
 				</p>
 			) : null}
 
-			<h1 class="mt-3 text-3xl font-bold text-slate-900">
+			<h1 class="stage-title mt-3 text-3xl font-bold text-slate-900">
 				{appliedJobTitle}
 			</h1>
 			{currentStageLabel ? (
-				<p class="mt-2 text-xs font-semibold uppercase tracking-[0.2em] text-blue-600">
+				<p class="stage-current mt-2 text-xs font-semibold uppercase tracking-[0.2em] text-blue-600">
 					Current Stage: {currentStageLabel}
 				</p>
 			) : null}
 			<p
 				class={
 					currentStageLabel
-						? "mt-1 text-xs uppercase tracking-[0.2em] text-slate-400"
-						: "mt-2 text-xs uppercase tracking-[0.2em] text-slate-400"
+						? "stage-company mt-1 text-xs uppercase tracking-[0.2em] text-slate-400"
+						: "stage-company mt-2 text-xs uppercase tracking-[0.2em] text-slate-400"
 				}
 			>
 				Tim Teknologi Global
 			</p>
 		</div>
 
-		<div class="w-[90%] max-w-3xl mx-auto mt-12">
+		<div class="stage-list w-[90%] max-w-3xl mx-auto mt-12">
 			{stageItems.length === 0 ? (
-				<div class="rounded-3xl border border-slate-100 bg-slate-50 p-10 text-center">
+				<div class="stage-empty rounded-3xl border border-slate-100 bg-slate-50 p-10 text-center">
 					<h2 class="text-xl font-semibold text-slate-800">
 						Stages belum tersedia
 					</h2>
@@ -314,7 +314,7 @@ const stageItems = visibleStages.map((stage: any, index: number) => {
 					</a>
 				</div>
 			) : (
-				<div class="space-y-6">
+				<div class="stage-items space-y-6">
 					{stageItems.map((stage, index) => {
 						const isCompleted = stage.status === "completed";
 						const isActive = stage.status === "active";
@@ -338,7 +338,11 @@ const stageItems = visibleStages.map((stage: any, index: number) => {
 						const badgeContent = stage.meta || "";
 
 						return (
-							<div class="relative flex gap-6" data-stage-id={stage.id}>
+							<div
+								class="stage-card relative flex gap-6"
+								data-stage-id={stage.id}
+								style={`animation-delay: ${index * 110}ms;`}
+							>
 								<div class="relative flex flex-col items-center">
 									<div
 										class={`flex h-9 w-9 items-center justify-center rounded-full ${dotClass} text-white shadow-md`}
@@ -391,4 +395,87 @@ const stageItems = visibleStages.map((stage: any, index: number) => {
 			)}
 		</div>
 	</section>
+
+	<style>
+		.stage-hero,
+		.stage-content,
+		.stage-pill,
+		.stage-name,
+		.stage-title,
+		.stage-current,
+		.stage-company,
+		.stage-list,
+		.stage-empty,
+		.stage-card {
+			opacity: 0;
+			transform: translateY(14px);
+			animation: stageFadeUp 680ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+			will-change: opacity, transform;
+		}
+
+		.stage-hero {
+			animation-delay: 0ms;
+		}
+
+		.stage-content {
+			animation-delay: 70ms;
+		}
+
+		.stage-pill {
+			animation-delay: 140ms;
+		}
+
+		.stage-name {
+			animation-delay: 220ms;
+		}
+
+		.stage-title {
+			animation-delay: 300ms;
+		}
+
+		.stage-current {
+			animation-delay: 380ms;
+		}
+
+		.stage-company {
+			animation-delay: 460ms;
+		}
+
+		.stage-list,
+		.stage-empty {
+			animation-delay: 540ms;
+		}
+
+		.stage-card {
+			animation-delay: 0ms;
+		}
+
+		@keyframes stageFadeUp {
+			from {
+				opacity: 0;
+				transform: translateY(14px);
+			}
+			to {
+				opacity: 1;
+				transform: translateY(0);
+			}
+		}
+
+		@media (prefers-reduced-motion: reduce) {
+			.stage-hero,
+			.stage-content,
+			.stage-pill,
+			.stage-name,
+			.stage-title,
+			.stage-current,
+			.stage-company,
+			.stage-list,
+			.stage-empty,
+			.stage-card {
+				opacity: 1;
+				transform: none;
+				animation: none;
+			}
+		}
+	</style>
 </MainLayout>
