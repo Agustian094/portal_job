@@ -28,7 +28,11 @@ import {
         data-reveal
         data-reveal-delay="0"
       >
-        <h2 class="text-xl md:text-3xl font-bold text-[#111827] mb-8" data-reveal data-reveal-delay="80">
+        <h2
+          class="text-xl md:text-3xl font-bold text-[#111827] mb-8"
+          data-reveal
+          data-reveal-delay="80"
+        >
           Send us a Message
         </h2>
 
@@ -118,12 +122,20 @@ import {
           data-reveal
           data-reveal-delay="160"
         >
-          <h2 class="text-xl md:text-3xl font-bold text-[#111827] mb-8" data-reveal data-reveal-delay="200">
+          <h2
+            class="text-xl md:text-3xl font-bold text-[#111827] mb-8"
+            data-reveal
+            data-reveal-delay="200"
+          >
             Contact Information
           </h2>
 
           <div class="space-y-8">
-            <div class="flex items-start gap-5" data-reveal data-reveal-delay="260">
+            <div
+              class="flex items-start gap-5"
+              data-reveal
+              data-reveal-delay="260"
+            >
               <div
                 class="w-11 h-11 rounded-xl bg-blue-100 flex items-center justify-center shrink-0"
               >
@@ -143,7 +155,11 @@ import {
             </div>
 
             <!-- PHONE -->
-            <div class="flex items-start gap-5" data-reveal data-reveal-delay="320">
+            <div
+              class="flex items-start gap-5"
+              data-reveal
+              data-reveal-delay="320"
+            >
               <div
                 class="w-11 h-11 rounded-xl bg-green-100 flex items-center justify-center shrink-0"
               >
@@ -162,7 +178,11 @@ import {
             </div>
 
             <!-- EMAIL -->
-            <div class="flex items-start gap-5" data-reveal data-reveal-delay="380">
+            <div
+              class="flex items-start gap-5"
+              data-reveal
+              data-reveal-delay="380"
+            >
               <div
                 class="w-11 h-11 rounded-xl bg-purple-100 flex items-center justify-center shrink-0"
               >
@@ -181,7 +201,11 @@ import {
             </div>
 
             <!-- HOURS -->
-            <div class="flex items-start gap-5" data-reveal data-reveal-delay="440">
+            <div
+              class="flex items-start gap-5"
+              data-reveal
+              data-reveal-delay="440"
+            >
               <div
                 class="w-11 h-11 rounded-xl bg-orange-100 flex items-center justify-center shrink-0"
               >
@@ -207,7 +231,11 @@ import {
           data-reveal
           data-reveal-delay="500"
         >
-          <h2 class="text-xl md:text-3xl font-bold text-[#111827] mb-8" data-reveal data-reveal-delay="540">
+          <h2
+            class="text-xl md:text-3xl font-bold text-[#111827] mb-8"
+            data-reveal
+            data-reveal-delay="540"
+          >
             Follow Us
           </h2>
 
@@ -258,7 +286,9 @@ import {
       const items = Array.from(document.querySelectorAll("[data-reveal]"));
       if (!items.length) return;
 
-      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const reduceMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
       if (reduceMotion || !("IntersectionObserver" in window)) {
         items.forEach((i) => i.classList.add("is-visible"));
         return;
@@ -269,13 +299,16 @@ import {
         i.style.transitionDelay = `${d}ms`;
       });
 
-      const obs = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) return;
-          entry.target.classList.add("is-visible");
-          obs.unobserve(entry.target);
-        });
-      }, { threshold: 0.15, rootMargin: '0px 0px -10% 0px' });
+      const obs = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            entry.target.classList.add("is-visible");
+            obs.unobserve(entry.target);
+          });
+        },
+        { threshold: 0.15, rootMargin: "0px 0px -10% 0px" },
+      );
 
       items.forEach((i) => obs.observe(i));
     })();

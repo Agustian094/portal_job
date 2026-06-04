@@ -2,6 +2,13 @@
 import { Briefcase, Clock, MapPin } from "lucide-astro";
 
 const { id, title, slug, summary, description } = Astro.props;
+
+// Truncate long descriptions for display in the card
+const maxLen = 80;
+const shortDescription =
+  description && description.length > maxLen
+    ? description.slice(0, maxLen).trimEnd() + "..."
+    : description;
 ---
 
 <!-- CARD CONTAINER -->
@@ -28,7 +35,7 @@ const { id, title, slug, summary, description } = Astro.props;
 
       <!-- description -->
       <p class="text-sm text-gray-500">
-        {description || "No description available"}
+        {shortDescription || "No description available"}
       </p>
 
       <!-- META INFO -->
