@@ -250,12 +250,13 @@ const matchStage = (stage: any, index: number) => {
   return false;
 };
 
-// cari stage aktif kandidat saat ini (BUKAN stage reject)
-const rejectedActiveOriginalIndex = isRejectedJourney
-  ? visibleStageEntries.findIndex(({ stage }, index) =>
-      matchStage(stage, index),
+const rejectStageOriginalIndex = isRejectedJourney
+  ? stages.findIndex(
+      (stage, index) => matchStage(stage, index) && isRejectStage(stage),
     )
   : -1;
+const rejectedActiveOriginalIndex =
+  rejectStageOriginalIndex > 0 ? rejectStageOriginalIndex - 1 : -1;
 
 const currentStageIndex = visibleStages.findIndex(matchStage);
 const currentStageItem =
@@ -271,38 +272,25 @@ const currentStageLabel = currentStageItem
     : "";
 
 const detectStatus = (stage: any, index: number, originalIndex: number) => {
-  // ===== CASE REJECT =====
   if (isRejectedJourney) {
-    // stage sebelum stage aktif → completed
-    if (rejectedActiveOriginalIndex >= 0) {
-      const rejectedOriginal =
-        visibleStageEntries[rejectedActiveOriginalIndex]?.originalIndex;
-
-      if (originalIndex < rejectedOriginal) {
-        return "completed";
-      }
-
-      // stage aktif tetap merah
-      if (originalIndex === rejectedOriginal) {
-        return "active";
-      }
-
-      // stage sesudahnya tetap terkunci
+    if (rejectStageOriginalIndex >= 0 && rejectedActiveOriginalIndex >= 0) {
+      if (originalIndex < rejectedActiveOriginalIndex) return "completed";
+      if (originalIndex === rejectedActiveOriginalIndex) return "active";
       return "locked";
     }
+
+    if (index < visibleStages.length - 1) return "completed";
+    if (index === visibleStages.length - 1) return "active";
+    return "locked";
   }
 
-  // ===== NORMAL FLOW =====
   if (currentStageIndex >= 0) {
     if (index < currentStageIndex) return "completed";
     if (index === currentStageIndex) return "active";
     return "locked";
   }
 
-  if (stage?.is_current === true || stage?.current === true) {
-    return "active";
-  }
-
+  if (stage?.is_current === true || stage?.current === true) return "active";
   if (stage?.is_completed === true || stage?.completed === true) {
     return "completed";
   }
@@ -311,23 +299,15 @@ const detectStatus = (stage: any, index: number, originalIndex: number) => {
     stage?.status || stage?.stage_status || stage?.state || "",
   ).toLowerCase();
 
-  if (/(done|complete|completed|finish|passed)/.test(raw)) {
-    return "completed";
-  }
-
-  if (/(active|progress|review|ongoing|current)/.test(raw)) {
-    return "active";
-  }
-
-  if (/(lock|locked|pending|waiting)/.test(raw)) {
-    return "locked";
-  }
+  if (/(done|complete|completed|finish|passed)/.test(raw)) return "completed";
+  if (/(active|progress|review|ongoing|current)/.test(raw)) return "active";
+  if (/(lock|locked|pending|waiting)/.test(raw)) return "locked";
 
   if (index === 0) return "completed";
   if (index === 1) return "active";
-
   return "locked";
 };
+
 const stageItems = visibleStageEntries.map(
   ({ stage, originalIndex }, index: number) => {
     const status = detectStatus(stage, index, originalIndex);
