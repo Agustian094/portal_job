@@ -65,7 +65,7 @@ function parseOptions(optString: string | undefined): string[] {
   <!-- ================= FORM SECTION ================= -->
   <section class="bg-[#f5f7fb] py-12 min-h-screen">
     <div class="w-[90%] max-w-6xl mx-auto space-y-6">
-      <form id="questionForm" class="space-y-6">
+      <form id="questionForm" class="space-y-6" novalidate>
         <script
           id="questions-data"
           type="application/json"
@@ -272,6 +272,28 @@ function parseOptions(optString: string | undefined): string[] {
         console.error("questionForm not found");
         return;
       }
+
+      form.addEventListener(
+        "input",
+        (ev) => {
+          const target = ev.target;
+          if (target && typeof target.setCustomValidity === "function") {
+            target.setCustomValidity("");
+          }
+        },
+        true,
+      );
+
+      form.addEventListener(
+        "change",
+        (ev) => {
+          const target = ev.target;
+          if (target && typeof target.setCustomValidity === "function") {
+            target.setCustomValidity("");
+          }
+        },
+        true,
+      );
 
       form.addEventListener("submit", async (ev) => {
         ev.preventDefault();

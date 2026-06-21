@@ -2,480 +2,588 @@
 import MainLayout from "../../layouts/mainlayout.astro";
 import { getJobById } from "../../services/jobService";
 import {
-	getApplicationById,
-	getJobStagesByJobPosting,
+  getApplicationById,
+  getJobStagesByJobPosting,
 } from "../../services/applicationService";
 import { Check, Lock, Users } from "lucide-astro";
 
 export const prerender = false;
 
 const applicationId = String(Astro.params.application_id || "").trim();
-const application = applicationId ? await getApplicationById(applicationId) : null;
+const application = applicationId
+  ? await getApplicationById(applicationId)
+  : null;
 
 const jobPostingId = String(
-	application?.job_posting?._id ||
-		application?.job_posting ||
-		application?.job_id ||
-		application?.job ||
-		"",
+  application?.job_posting?._id ||
+    application?.job_posting ||
+    application?.job_id ||
+    application?.job ||
+    "",
 ).trim();
 
 const job = jobPostingId ? await getJobById(jobPostingId) : null;
 const rawStages = jobPostingId
-	? await getJobStagesByJobPosting(jobPostingId)
-	: [];
+  ? await getJobStagesByJobPosting(jobPostingId)
+  : [];
 const stages = Array.isArray(rawStages) ? rawStages : [];
 const appliedJobTitle = String(
-	job?.title ||
-		application?.job_title ||
-		application?.job_name ||
-		"Tahapan Seleksi",
+  job?.title ||
+    application?.job_title ||
+    application?.job_name ||
+    "Tahapan Seleksi",
 );
 const applicantName = String(
-	application?.candidate_name ||
-		application?.candidate ||
-		application?.full_name ||
-		application?.name ||
-		Astro.url.searchParams.get("name") ||
-		Astro.url.searchParams.get("candidate") ||
-		"",
+  application?.candidate_name ||
+    application?.candidate ||
+    application?.full_name ||
+    application?.name ||
+    Astro.url.searchParams.get("name") ||
+    Astro.url.searchParams.get("candidate") ||
+    "",
 ).trim();
 
 const currentStageRef =
-	application?.current_stage || application?.stage || application?.current || null;
+  application?.current_stage ||
+  application?.stage ||
+  application?.current ||
+  null;
+
+const REJECT_STAGE_PATTERN =
+  /(^|\b)(reject|rejected|ditolak|failed|declined)(\b|$)/i;
 
 const extractStageTitle = (stage: any) => {
-	if (!stage) return "";
-	if (typeof stage === "string") return stage.trim();
+  if (!stage) return "";
+  if (typeof stage === "string") return stage.trim();
 
-	const candidates = [
-		stage?.stage_name,
-		stage?.name,
-		stage?.title,
-		stage?.label,
-		stage?.stage,
-	];
+  const candidates = [
+    stage?.stage_name,
+    stage?.name,
+    stage?.title,
+    stage?.label,
+    stage?.stage,
+  ];
 
-	for (const value of candidates) {
-		if (value !== undefined && value !== null && String(value).trim()) {
-			return String(value).trim();
-		}
-	}
+  for (const value of candidates) {
+    if (value !== undefined && value !== null && String(value).trim()) {
+      return String(value).trim();
+    }
+  }
 
-	return "";
+  return "";
 };
 
 const pickStageTitle = (stage: any, index: number) => {
-	const title = extractStageTitle(stage);
-	return title || `Stage ${index + 1}`;
+  const title = extractStageTitle(stage);
+  return title || `Stage ${index + 1}`;
 };
 
 const normalizeStageId = (stage: any) => {
-	if (!stage) return "";
-	if (typeof stage === "string") {
-		const trimmed = stage.trim();
-		return /^[a-f0-9]{24}$/i.test(trimmed) ? trimmed : "";
-	}
+  if (!stage) return "";
+  if (typeof stage === "string") {
+    const trimmed = stage.trim();
+    return /^[a-f0-9]{24}$/i.test(trimmed) ? trimmed : "";
+  }
 
-	return String(stage?._id || stage?.id || stage?.stage_id || "").trim();
+  return String(stage?._id || stage?.id || stage?.stage_id || "").trim();
 };
 
 const normalizeStageOrder = (stage: any) => {
-	if (!stage || typeof stage === "string") return null;
-	const value = stage?.stage_order ?? stage?.order ?? stage?.sequence ?? stage?.step;
-	const num = Number(value);
-	return Number.isFinite(num) ? num : null;
+  if (!stage || typeof stage === "string") return null;
+  const value =
+    stage?.stage_order ?? stage?.order ?? stage?.sequence ?? stage?.step;
+  const num = Number(value);
+  return Number.isFinite(num) ? num : null;
 };
 
 const normalizeStageTitle = (stage: any) => {
-	if (!stage) return "";
-	if (typeof stage === "string") {
-		const trimmed = stage.trim();
-		return /^[a-f0-9]{24}$/i.test(trimmed) ? "" : trimmed;
-	}
+  if (!stage) return "";
+  if (typeof stage === "string") {
+    const trimmed = stage.trim();
+    return /^[a-f0-9]{24}$/i.test(trimmed) ? "" : trimmed;
+  }
 
-	return extractStageTitle(stage) || "";
+  return extractStageTitle(stage) || "";
+};
+
+const normalizeStageStatus = (stage: any) => {
+  if (!stage) return "";
+  return String(
+    stage?.status ??
+      stage?.stage_status ??
+      stage?.state ??
+      stage?.visibility ??
+      "",
+  )
+    .trim()
+    .toLowerCase();
+};
+
+const isRejectStage = (stage: any) => {
+  const title = normalizeStageTitle(stage).toLowerCase();
+  const status = normalizeStageStatus(stage);
+  return REJECT_STAGE_PATTERN.test(title) || REJECT_STAGE_PATTERN.test(status);
 };
 
 const getStageActiveInfo = (stage: any) => {
-	if (!stage || typeof stage !== "object") {
-		return { hasIndicator: false, isActive: false };
-	}
+  if (!stage || typeof stage !== "object") {
+    return { hasIndicator: false, isActive: false };
+  }
 
-	const booleanCandidates = [
-		stage?.is_active,
-		stage?.active,
-		stage?.isActive,
-		stage?.enabled,
-		stage?.is_enabled,
-		stage?.published,
-		stage?.is_published,
-	];
+  const booleanCandidates = [
+    stage?.is_active,
+    stage?.active,
+    stage?.isActive,
+    stage?.enabled,
+    stage?.is_enabled,
+    stage?.published,
+    stage?.is_published,
+  ];
 
-	let hasIndicator = false;
-	for (const value of booleanCandidates) {
-		if (value === true) return { hasIndicator: true, isActive: true };
-		if (value === false) hasIndicator = true;
-	}
+  let hasIndicator = false;
+  for (const value of booleanCandidates) {
+    if (value === true) return { hasIndicator: true, isActive: true };
+    if (value === false) hasIndicator = true;
+  }
 
-	const rawStatus = String(
-		stage?.status ?? stage?.stage_status ?? stage?.state ?? stage?.visibility ?? "",
-	)
-		.trim()
-		.toLowerCase();
+  const rawStatus = String(
+    stage?.status ??
+      stage?.stage_status ??
+      stage?.state ??
+      stage?.visibility ??
+      "",
+  )
+    .trim()
+    .toLowerCase();
 
-	if (rawStatus) {
-		if (/(inactive|disabled|draft|archived|hidden|off)\b/.test(rawStatus)) {
-			return { hasIndicator: true, isActive: false };
-		}
-		if (/(^|\b)(active|enabled|published|live|on)(\b|$)/.test(rawStatus)) {
-			return { hasIndicator: true, isActive: true };
-		}
-		return { hasIndicator: true, isActive: false };
-	}
+  if (rawStatus) {
+    if (/(inactive|disabled|draft|archived|hidden|off)\b/.test(rawStatus)) {
+      return { hasIndicator: true, isActive: false };
+    }
+    if (/(^|\b)(active|enabled|published|live|on)(\b|$)/.test(rawStatus)) {
+      return { hasIndicator: true, isActive: true };
+    }
+    return { hasIndicator: true, isActive: false };
+  }
 
-	return { hasIndicator, isActive: false };
+  return { hasIndicator, isActive: false };
 };
 
 const pickStageDesc = (stage: any) => {
-	const candidates = [
-		stage?.description,
-		stage?.desc,
-		stage?.detail,
-		stage?.notes,
-	];
+  const candidates = [
+    stage?.description,
+    stage?.desc,
+    stage?.detail,
+    stage?.notes,
+  ];
 
-	for (const value of candidates) {
-		if (value !== undefined && value !== null && String(value).trim()) {
-			return String(value).trim();
-		}
-	}
+  for (const value of candidates) {
+    if (value !== undefined && value !== null && String(value).trim()) {
+      return String(value).trim();
+    }
+  }
 
-	return "";
+  return "";
 };
 
 const pickStageMeta = (stage: any) => {
-	const candidates = [
-		stage?.date,
-		stage?.completed_date,
-		stage?.est_completion,
-		stage?.estimated_date,
-		stage?.eta,
-	];
+  const candidates = [
+    stage?.date,
+    stage?.completed_date,
+    stage?.est_completion,
+    stage?.estimated_date,
+    stage?.eta,
+  ];
 
-	for (const value of candidates) {
-		if (value !== undefined && value !== null && String(value).trim()) {
-			return String(value).trim();
-		}
-	}
+  for (const value of candidates) {
+    if (value !== undefined && value !== null && String(value).trim()) {
+      return String(value).trim();
+    }
+  }
 
-	return "";
+  return "";
 };
 
 const currentStageId = normalizeStageId(currentStageRef);
 const currentStageOrder = normalizeStageOrder(currentStageRef);
 const currentStageName = normalizeStageTitle(currentStageRef);
+const currentStageStatus = normalizeStageStatus(currentStageRef);
+const isRejectedJourney =
+  isRejectStage(currentStageRef) ||
+  REJECT_STAGE_PATTERN.test(currentStageStatus);
 
-const stageActiveInfos = stages.map((stage) => getStageActiveInfo(stage));
-const shouldFilterActive = stageActiveInfos.some((info) => info.hasIndicator);
-const visibleStages = shouldFilterActive
-	? stages.filter((_, index) => stageActiveInfos[index].isActive)
-	: stages;
+const stageEntries = stages
+  .map((stage, originalIndex) => ({
+    stage,
+    originalIndex,
+    activeInfo: getStageActiveInfo(stage),
+  }))
+  .filter(({ stage }) => !isRejectStage(stage));
+
+const shouldFilterActive = stageEntries.some(
+  ({ activeInfo }) => activeInfo.hasIndicator,
+);
+const visibleStageEntries = shouldFilterActive
+  ? stageEntries.filter(({ activeInfo }) => activeInfo.isActive)
+  : stageEntries;
+const visibleStages = visibleStageEntries.map(({ stage }) => stage);
 
 const matchStage = (stage: any, index: number) => {
-	const stageId = normalizeStageId(stage);
-	if (currentStageId && stageId && stageId === currentStageId) return true;
+  const stageId = normalizeStageId(stage);
+  if (currentStageId && stageId && stageId === currentStageId) return true;
 
-	if (currentStageOrder !== null) {
-		const stageOrder = normalizeStageOrder(stage);
-		if (stageOrder !== null && stageOrder === currentStageOrder) return true;
-	}
+  if (currentStageOrder !== null) {
+    const stageOrder = normalizeStageOrder(stage);
+    if (stageOrder !== null && stageOrder === currentStageOrder) return true;
+  }
 
-	if (currentStageName) {
-		const stageName = normalizeStageTitle(stage);
-		if (
-			stageName &&
-			stageName.toLowerCase() === currentStageName.toLowerCase()
-		) {
-			return true;
-		}
-	}
+  if (currentStageName) {
+    const stageName = normalizeStageTitle(stage);
+    if (
+      stageName &&
+      stageName.toLowerCase() === currentStageName.toLowerCase()
+    ) {
+      return true;
+    }
+  }
 
-	return false;
+  return false;
 };
+
+const rejectStageOriginalIndex = isRejectedJourney
+  ? stages.findIndex(
+      (stage, index) => matchStage(stage, index) && isRejectStage(stage),
+    )
+  : -1;
+const rejectedActiveOriginalIndex =
+  rejectStageOriginalIndex > 0 ? rejectStageOriginalIndex - 1 : -1;
 
 const currentStageIndex = visibleStages.findIndex(matchStage);
 const currentStageItem =
-	currentStageIndex >= 0 ? visibleStages[currentStageIndex] : null;
+  currentStageIndex >= 0 ? visibleStages[currentStageIndex] : null;
 const currentStageLabel = currentStageItem
-	? pickStageTitle(currentStageItem, currentStageIndex)
-	: currentStageName && !currentStageId
-		? currentStageName
-		: "";
+  ? isRejectedJourney
+    ? ""
+    : pickStageTitle(currentStageItem, currentStageIndex)
+  : currentStageName && !currentStageId
+    ? isRejectedJourney
+      ? ""
+      : currentStageName
+    : "";
 
-const detectStatus = (stage: any, index: number) => {
-	if (currentStageIndex >= 0) {
-		if (index < currentStageIndex) return "completed";
-		if (index === currentStageIndex) return "active";
-		return "locked";
-	}
+const detectStatus = (stage: any, index: number, originalIndex: number) => {
+  if (isRejectedJourney) {
+    if (rejectStageOriginalIndex >= 0 && rejectedActiveOriginalIndex >= 0) {
+      if (originalIndex < rejectedActiveOriginalIndex) return "completed";
+      if (originalIndex === rejectedActiveOriginalIndex) return "active";
+      return "locked";
+    }
 
-	if (stage?.is_current === true || stage?.current === true) return "active";
-	if (stage?.is_completed === true || stage?.completed === true) {
-		return "completed";
-	}
+    if (index < visibleStages.length - 1) return "completed";
+    if (index === visibleStages.length - 1) return "active";
+    return "locked";
+  }
 
-	const raw = String(
-		stage?.status || stage?.stage_status || stage?.state || "",
-	).toLowerCase();
+  if (currentStageIndex >= 0) {
+    if (index < currentStageIndex) return "completed";
+    if (index === currentStageIndex) return "active";
+    return "locked";
+  }
 
-	if (/(done|complete|completed|finish|passed)/.test(raw)) return "completed";
-	if (/(active|progress|review|ongoing|current)/.test(raw)) return "active";
-	if (/(lock|locked|pending|waiting)/.test(raw)) return "locked";
+  if (stage?.is_current === true || stage?.current === true) return "active";
+  if (stage?.is_completed === true || stage?.completed === true) {
+    return "completed";
+  }
 
-	if (index === 0) return "completed";
-	if (index === 1) return "active";
-	return "locked";
+  const raw = String(
+    stage?.status || stage?.stage_status || stage?.state || "",
+  ).toLowerCase();
+
+  if (/(done|complete|completed|finish|passed)/.test(raw)) return "completed";
+  if (/(active|progress|review|ongoing|current)/.test(raw)) return "active";
+  if (/(lock|locked|pending|waiting)/.test(raw)) return "locked";
+
+  if (index === 0) return "completed";
+  if (index === 1) return "active";
+  return "locked";
 };
 
-const stageItems = visibleStages.map((stage: any, index: number) => {
-	const status = detectStatus(stage, index);
-	const statusLabel =
-		status === "completed"
-			? "Completed"
-			: status === "active"
-				? "In progress"
-				: "Locked";
+const stageItems = visibleStageEntries.map(
+  ({ stage, originalIndex }, index: number) => {
+    const status = detectStatus(stage, index, originalIndex);
+    const statusLabel =
+      status === "completed"
+        ? "Completed"
+        : status === "active"
+          ? "In progress"
+          : "Locked";
 
-	return {
-		id: stage?._id || `stage-${index + 1}`,
-		order: stage?.stage_order ?? index + 1,
-		title: pickStageTitle(stage, index),
-		description: pickStageDesc(stage),
-		meta: pickStageMeta(stage),
-		status,
-		statusLabel,
-	};
-});
+    const isRejectedActiveCard = isRejectedJourney && status === "active";
+    const descriptionText =
+      status === "completed"
+        ? "tahapan ini telah anda lewati"
+        : isRejectedActiveCard
+          ? "mohon maaf ditahapan ini anda belum lolos"
+          : pickStageDesc(stage) ||
+            "Tahapan ini akan diinformasikan lebih lanjut oleh tim rekrutmen.";
+
+    return {
+      id: stage?._id || `stage-${originalIndex + 1}`,
+      order: stage?.stage_order ?? originalIndex + 1,
+      title: pickStageTitle(stage, index),
+      description: descriptionText,
+      meta: pickStageMeta(stage),
+      status,
+      statusLabel,
+      isRejectedActiveCard,
+    };
+  },
+);
 ---
 
 <MainLayout title="Application Journey">
-	<!-- ================= HEADER ================= -->
-	<section class="stage-hero bg-gradient-to-r from-blue-500 to-blue-400 h-[90px]"></section>
+  <!-- ================= HEADER ================= -->
+  <section
+    class="stage-hero bg-gradient-to-r from-blue-500 to-blue-400 h-[90px]"
+  >
+  </section>
 
-	<!-- ================= CONTENT ================= -->
-	<section class="stage-content bg-white -mt-12 rounded-t-[36px] pt-12 pb-20">
-		<div class="w-[90%] max-w-4xl mx-auto text-center">
-			<span
-				class="stage-pill inline-flex items-center gap-2 rounded-full bg-emerald-100 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.3em] text-emerald-700"
-			>
-				Application Journey
-			</span>
+  <!-- ================= CONTENT ================= -->
+  <section class="stage-content bg-white -mt-12 rounded-t-[36px] pt-12 pb-20">
+    <div class="w-[90%] max-w-4xl mx-auto text-center">
+      <span
+        class="stage-pill inline-flex items-center gap-2 rounded-full bg-emerald-100 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.3em] text-emerald-700"
+      >
+        Application Journey
+      </span>
 
-			{applicantName ? (
-				<p class="stage-name mt-4 text-sm font-semibold text-slate-500">
-					{applicantName}
-				</p>
-			) : null}
+      {
+        applicantName ? (
+          <p class="stage-name mt-4 text-sm font-semibold text-slate-500">
+            {applicantName}
+          </p>
+        ) : null
+      }
 
-			<h1 class="stage-title mt-3 text-3xl font-bold text-slate-900">
-				{appliedJobTitle}
-			</h1>
-			{currentStageLabel ? (
-				<p class="stage-current mt-2 text-xs font-semibold uppercase tracking-[0.2em] text-blue-600">
-					Current Stage: {currentStageLabel}
-				</p>
-			) : null}
-			<p
-				class={
-					currentStageLabel
-						? "stage-company mt-1 text-xs uppercase tracking-[0.2em] text-slate-400"
-						: "stage-company mt-2 text-xs uppercase tracking-[0.2em] text-slate-400"
-				}
-			>
-				Tim Teknologi Global
-			</p>
-		</div>
+      <h1 class="stage-title mt-3 text-3xl font-bold text-slate-900">
+        {appliedJobTitle}
+      </h1>
+      {
+        currentStageLabel ? (
+          <p class="stage-current mt-2 text-xs font-semibold uppercase tracking-[0.2em] text-blue-600">
+            Current Stage: {currentStageLabel}
+          </p>
+        ) : null
+      }
+      <p
+        class={currentStageLabel
+          ? "stage-company mt-1 text-xs uppercase tracking-[0.2em] text-slate-400"
+          : "stage-company mt-2 text-xs uppercase tracking-[0.2em] text-slate-400"}
+      >
+        Tim Teknologi Global
+      </p>
+    </div>
 
-		<div class="stage-list w-[90%] max-w-3xl mx-auto mt-12">
-			{stageItems.length === 0 ? (
-				<div class="stage-empty rounded-3xl border border-slate-100 bg-slate-50 p-10 text-center">
-					<h2 class="text-xl font-semibold text-slate-800">
-						Stages belum tersedia
-					</h2>
-					<p class="text-slate-500 mt-2">
-						Data stage untuk job ini belum diatur.
-					</p>
-					<a
-						href="/jobs"
-						class="inline-flex items-center justify-center mt-6 rounded-full bg-blue-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-200 transition hover:bg-blue-600"
-					>
-						Kembali ke daftar job
-					</a>
-				</div>
-			) : (
-				<div class="stage-items space-y-6">
-					{stageItems.map((stage, index) => {
-						const isCompleted = stage.status === "completed";
-						const isActive = stage.status === "active";
-						const Icon = isCompleted ? Check : isActive ? Users : Lock;
-						const dotClass = isCompleted
-							? "bg-emerald-500"
-							: isActive
-								? "bg-blue-600"
-								: "bg-slate-300";
-						const cardClass = isCompleted
-							? "border-slate-200 bg-white"
-							: isActive
-								? "border-blue-300 bg-white shadow-md"
-								: "border-slate-200 bg-slate-50";
-						const descClass = isCompleted
-							? "text-slate-500"
-							: isActive
-								? "text-blue-600"
-								: "text-slate-400";
-						const titleClass = isActive ? "text-blue-700" : "text-slate-900";
-						const badgeContent = stage.meta || "";
+    <div class="stage-list w-[90%] max-w-3xl mx-auto mt-12">
+      {
+        stageItems.length === 0 ? (
+          <div class="stage-empty rounded-3xl border border-slate-100 bg-slate-50 p-10 text-center">
+            <h2 class="text-xl font-semibold text-slate-800">
+              Stages belum tersedia
+            </h2>
+            <p class="text-slate-500 mt-2">
+              Data stage untuk job ini belum diatur.
+            </p>
+            <a
+              href="/jobs"
+              class="inline-flex items-center justify-center mt-6 rounded-full bg-blue-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-200 transition hover:bg-blue-600"
+            >
+              Kembali ke daftar job
+            </a>
+          </div>
+        ) : (
+          <div class="stage-items space-y-6">
+            {stageItems.map((stage, index) => {
+              const isCompleted = stage.status === "completed";
+              const isActive = stage.status === "active";
+              const isRejectedActiveCard = stage.isRejectedActiveCard;
+              const Icon = isCompleted ? Check : isActive ? Users : Lock;
+              const dotClass = isCompleted
+                ? "bg-emerald-500"
+                : isActive
+                  ? isRejectedActiveCard
+                    ? "bg-red-600"
+                    : "bg-blue-600"
+                  : "bg-slate-300";
+              const cardClass = isCompleted
+                ? "border-slate-200 bg-white"
+                : isActive
+                  ? isRejectedActiveCard
+                    ? "border-red-300 bg-red-50 shadow-md"
+                    : "border-blue-300 bg-white shadow-md"
+                  : "border-slate-200 bg-slate-50";
+              const descClass = isCompleted
+                ? "text-slate-500"
+                : isActive
+                  ? isRejectedActiveCard
+                    ? "text-red-700 font-semibold"
+                    : "text-blue-600"
+                  : "text-slate-400";
+              const titleClass = isActive
+                ? isRejectedActiveCard
+                  ? "text-red-800"
+                  : "text-blue-700"
+                : "text-slate-900";
+              const badgeContent = stage.meta || "";
 
-						return (
-							<div
-								class="stage-card relative flex gap-6"
-								data-stage-id={stage.id}
-								style={`animation-delay: ${index * 110}ms;`}
-							>
-								<div class="relative flex flex-col items-center">
-									<div
-										class={`flex h-9 w-9 items-center justify-center rounded-full ${dotClass} text-white shadow-md`}
-									>
-										<Icon size={16} />
-									</div>
-									{index < stageItems.length - 1 ? (
-										<span class="mt-3 h-full w-px border-s border-dashed border-slate-200"></span>
-									) : null}
-								</div>
+              return (
+                <div
+                  class="stage-card relative flex gap-6"
+                  data-stage-id={stage.id}
+                  style={`animation-delay: ${index * 110}ms;`}
+                >
+                  <div class="relative flex flex-col items-center">
+                    <div
+                      class={`flex h-9 w-9 items-center justify-center rounded-full ${dotClass} text-white shadow-md`}
+                    >
+                      <Icon size={16} />
+                    </div>
+                    {index < stageItems.length - 1 ? (
+                      <span class="mt-3 h-full w-px border-s border-dashed border-slate-200" />
+                    ) : null}
+                  </div>
 
-								<div class={`flex-1 rounded-2xl border px-6 py-5 ${cardClass}`}>
-									<div class="flex items-start justify-between gap-4">
-										<div>
-											<h3 class={`text-lg font-semibold ${titleClass}`}>
-												{stage.title}
-											</h3>
-											<p class={`mt-1 text-sm ${descClass}`}>
-												{stage.description ||
-													"Tahapan ini akan diinformasikan lebih lanjut oleh tim rekrutmen."}
-											</p>
-										</div>
+                  <div
+                    class={`flex-1 rounded-2xl border px-6 py-5 ${cardClass}`}
+                  >
+                    <div class="flex items-start justify-between gap-4">
+                      <div>
+                        <h3 class={`text-lg font-semibold ${titleClass}`}>
+                          {stage.title}
+                        </h3>
+                        <p class={`mt-1 text-sm ${descClass}`}>
+                          {stage.description ||
+                            "Tahapan ini akan diinformasikan lebih lanjut oleh tim rekrutmen."}
+                        </p>
+                      </div>
 
-										<div class="text-right shrink-0">
-											{isCompleted ? (
-												<span class="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-[11px] font-semibold text-emerald-700">
-													{badgeContent || "Completed"}
-												</span>
-											) : isActive ? (
-												<div>
-													<p class="text-[10px] uppercase tracking-[0.2em] text-slate-400">
-														Est. Completion
-													</p>
-													<p class="mt-1 text-xs font-semibold text-slate-600">
-														{badgeContent || "In progress"}
-													</p>
-												</div>
-											) : (
-												<span class="text-[11px] uppercase tracking-[0.2em] text-slate-300">
-													Locked
-												</span>
-											)}
-										</div>
-									</div>
-								</div>
-							</div>
-						);
-					})}
-				</div>
-			)}
-		</div>
-	</section>
+                      <div class="text-right shrink-0">
+                        {isCompleted ? (
+                          <span class="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-[11px] font-semibold text-emerald-700">
+                            {badgeContent || "Completed"}
+                          </span>
+                        ) : isActive ? (
+                          isRejectedActiveCard ? (
+                            <span class="inline-flex items-center rounded-full bg-red-100 px-3 py-1 text-[11px] font-semibold text-red-700">
+                              Ditolak
+                            </span>
+                          ) : (
+                            <div>
+                              <p class="text-[10px] uppercase tracking-[0.2em] text-slate-400">
+                                Est. Completion
+                              </p>
+                              <p class="mt-1 text-xs font-semibold text-slate-600">
+                                {badgeContent || "In progress"}
+                              </p>
+                            </div>
+                          )
+                        ) : (
+                          <span class="text-[11px] uppercase tracking-[0.2em] text-slate-300">
+                            Locked
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )
+      }
+    </div>
+  </section>
 
-	<style>
-		.stage-hero,
-		.stage-content,
-		.stage-pill,
-		.stage-name,
-		.stage-title,
-		.stage-current,
-		.stage-company,
-		.stage-list,
-		.stage-empty,
-		.stage-card {
-			opacity: 0;
-			transform: translateY(14px);
-			animation: stageFadeUp 680ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
-			will-change: opacity, transform;
-		}
+  <style>
+    .stage-hero,
+    .stage-content,
+    .stage-pill,
+    .stage-name,
+    .stage-title,
+    .stage-current,
+    .stage-company,
+    .stage-list,
+    .stage-empty,
+    .stage-card {
+      opacity: 0;
+      transform: translateY(14px);
+      animation: stageFadeUp 680ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      will-change: opacity, transform;
+    }
 
-		.stage-hero {
-			animation-delay: 0ms;
-		}
+    .stage-hero {
+      animation-delay: 0ms;
+    }
 
-		.stage-content {
-			animation-delay: 70ms;
-		}
+    .stage-content {
+      animation-delay: 70ms;
+    }
 
-		.stage-pill {
-			animation-delay: 140ms;
-		}
+    .stage-pill {
+      animation-delay: 140ms;
+    }
 
-		.stage-name {
-			animation-delay: 220ms;
-		}
+    .stage-name {
+      animation-delay: 220ms;
+    }
 
-		.stage-title {
-			animation-delay: 300ms;
-		}
+    .stage-title {
+      animation-delay: 300ms;
+    }
 
-		.stage-current {
-			animation-delay: 380ms;
-		}
+    .stage-current {
+      animation-delay: 380ms;
+    }
 
-		.stage-company {
-			animation-delay: 460ms;
-		}
+    .stage-company {
+      animation-delay: 460ms;
+    }
 
-		.stage-list,
-		.stage-empty {
-			animation-delay: 540ms;
-		}
+    .stage-list,
+    .stage-empty {
+      animation-delay: 540ms;
+    }
 
-		.stage-card {
-			animation-delay: 0ms;
-		}
+    .stage-card {
+      animation-delay: 0ms;
+    }
 
-		@keyframes stageFadeUp {
-			from {
-				opacity: 0;
-				transform: translateY(14px);
-			}
-			to {
-				opacity: 1;
-				transform: translateY(0);
-			}
-		}
+    @keyframes stageFadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(14px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
 
-		@media (prefers-reduced-motion: reduce) {
-			.stage-hero,
-			.stage-content,
-			.stage-pill,
-			.stage-name,
-			.stage-title,
-			.stage-current,
-			.stage-company,
-			.stage-list,
-			.stage-empty,
-			.stage-card {
-				opacity: 1;
-				transform: none;
-				animation: none;
-			}
-		}
-	</style>
+    @media (prefers-reduced-motion: reduce) {
+      .stage-hero,
+      .stage-content,
+      .stage-pill,
+      .stage-name,
+      .stage-title,
+      .stage-current,
+      .stage-company,
+      .stage-list,
+      .stage-empty,
+      .stage-card {
+        opacity: 1;
+        transform: none;
+        animation: none;
+      }
+    }
+  </style>
 </MainLayout>
