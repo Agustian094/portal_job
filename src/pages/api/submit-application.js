@@ -6,7 +6,8 @@ export async function POST({ request }) {
   try {
     const formData = await request.formData();
 
-    const formatDateOnly = (date = new Date()) => date.toISOString().slice(0, 10);
+    const formatDateOnly = (date = new Date()) =>
+      date.toISOString().slice(0, 10);
 
     // Add required fields if not already present
     if (!formData.get("date")) {

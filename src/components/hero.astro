@@ -28,29 +28,23 @@ const {
     {subtitle}
   </p>
 
-  {showSearch && (
-    <!-- Search Bar -->
-    <div
-      class="hero-enter hero-search mt-8 w-full max-w-2xl bg-white rounded-xl shadow-lg flex items-center px-4 py-3 gap-3"
-    >
-      <!-- Icon -->
-      <Search class="w-6 h-6 text-gray-400" />
+  {
+    showSearch ? (
+      <div class="hero-enter hero-search mt-8 w-full max-w-2xl rounded-xl bg-white px-4 py-3 shadow-lg flex items-center gap-3">
+        <Search class="w-6 h-6 text-gray-400" />
 
-      <!-- Input -->
-      <input
-        type="text"
-        placeholder="Search"
-        class="flex-1 outline-none text-gray-700"
-      />
+        <input
+          type="text"
+          placeholder="Search"
+          class="flex-1 outline-none text-gray-700"
+        />
 
-      <!-- Button -->
-      <button
-        class="bg-blue-500 text-white px-5 py-2 rounded-lg hover:bg-blue-600 transition"
-      >
-        Search Job
-      </button>
-    </div>
-  )}
+        <button class="bg-blue-500 text-white px-5 py-2 rounded-lg hover:bg-blue-600 transition">
+          Search Job
+        </button>
+      </div>
+    ) : null
+  }
 </section>
 
 <style>

@@ -13,8 +13,12 @@ export async function getQuestionsByJob(jobPostingId) {
     const data = await requestQuestions();
     const entries = data.entries || [];
     const filtered = entries
-      .filter((e) => String(e?.header?._id || "") === String(jobPostingId || ""))
-      .sort((a, b) => Number(a.display_order || 0) - Number(b.display_order || 0));
+      .filter(
+        (e) => String(e?.header?._id || "") === String(jobPostingId || ""),
+      )
+      .sort(
+        (a, b) => Number(a.display_order || 0) - Number(b.display_order || 0),
+      );
 
     return { entries: filtered };
   } catch (err) {

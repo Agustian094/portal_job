@@ -36,9 +36,11 @@ function fetchJson(url) {
 function isFileLike(value) {
   if (!value || typeof value !== "object") return false;
 
-  const hasFileShape = typeof value.name === "string" && typeof value.size === "number";
+  const hasFileShape =
+    typeof value.name === "string" && typeof value.size === "number";
   const hasBinaryMethods =
-    typeof value.arrayBuffer === "function" || typeof value.stream === "function";
+    typeof value.arrayBuffer === "function" ||
+    typeof value.stream === "function";
 
   return hasFileShape && hasBinaryMethods;
 }
@@ -63,7 +65,8 @@ function getUploadedAssetPath(uploadResponse) {
       ? uploadResponse.result.assets
       : [];
 
-  const firstAsset = assetList.find((asset) => asset && typeof asset === "object") || null;
+  const firstAsset =
+    assetList.find((asset) => asset && typeof asset === "object") || null;
   return String(firstAsset?.path || firstAsset?.url || "").trim();
 }
 
@@ -80,9 +83,17 @@ function getStageActiveInfo(stage) {
       const normalized = value.trim().toLowerCase();
       if (!normalized) return false;
       if (
-        ["true", "1", "yes", "y", "active", "aktif", "enabled", "published", "on"].includes(
-          normalized,
-        )
+        [
+          "true",
+          "1",
+          "yes",
+          "y",
+          "active",
+          "aktif",
+          "enabled",
+          "published",
+          "on",
+        ].includes(normalized)
       ) {
         return true;
       }
@@ -108,7 +119,13 @@ function getStageActiveInfo(stage) {
     return null;
   };
 
-  const indicatorKeys = ["is_active", "active", "isActive", "enabled", "is_enabled"];
+  const indicatorKeys = [
+    "is_active",
+    "active",
+    "isActive",
+    "enabled",
+    "is_enabled",
+  ];
 
   let hasIndicator = false;
   for (const key of indicatorKeys) {
@@ -119,7 +136,11 @@ function getStageActiveInfo(stage) {
   }
 
   const rawStatus = String(
-    stage?.status ?? stage?.stage_status ?? stage?.state ?? stage?.visibility ?? "",
+    stage?.status ??
+      stage?.stage_status ??
+      stage?.state ??
+      stage?.visibility ??
+      "",
   )
     .trim()
     .toLowerCase();
@@ -143,6 +164,21 @@ async function fetchCollectionEntries(collection) {
   return Array.isArray(data.entries) ? data.entries : [];
 }
 
+async function fetchJobStagesByJobPosting(jobPostingId) {
+  const entries = await fetchCollectionEntries("job_stages");
+  const filtered = entries.filter(
+    (entry) => String(entry?.header?._id || "") === String(jobPostingId || ""),
+  );
+
+  filtered.sort((left, right) => {
+    const leftOrder = Number(left?.stage_order || 0);
+    const rightOrder = Number(right?.stage_order || 0);
+    return leftOrder - rightOrder;
+  });
+
+  return filtered;
+}
+
 export async function getApplications() {
   try {
     const entries = await fetchCollectionEntries("t_application");
@@ -157,7 +193,9 @@ export async function getApplicationById(applicationId) {
   try {
     const entries = await fetchCollectionEntries("t_application");
     const targetId = String(applicationId || "");
-    return entries.find((entry) => String(entry?._id || "") === targetId) || null;
+    return (
+      entries.find((entry) => String(entry?._id || "") === targetId) || null
+    );
   } catch (err) {
     console.error("applicationService.getApplicationById ->", err.message);
     return null;
@@ -165,10 +203,7 @@ export async function getApplicationById(applicationId) {
 }
 
 export async function getJobStagesByJobPosting(jobPostingId) {
-  const entries = await fetchCollectionEntries("job_stages");
-  const filtered = entries.filter(
-    (entry) => String(entry?.header?._id || "") === String(jobPostingId || ""),
-  );
+  const filtered = await fetchJobStagesByJobPosting(jobPostingId);
 
   const activeInfos = filtered.map((stage) => getStageActiveInfo(stage));
   const shouldFilterActive = activeInfos.some((info) => info.hasIndicator);
@@ -185,6 +220,10 @@ export async function getJobStagesByJobPosting(jobPostingId) {
   return activeOnly;
 }
 
+export async function getAllJobStagesByJobPosting(jobPostingId) {
+  return fetchJobStagesByJobPosting(jobPostingId);
+}
+
 export async function getInitialJobStage(jobPostingId) {
   const stages = await getJobStagesByJobPosting(jobPostingId);
   return stages[0] || null;
@@ -193,7 +232,8 @@ export async function getInitialJobStage(jobPostingId) {
 export async function submitApplication(formData) {
   const url = `${BASE_URL}collections/save/t_application?token=${TOKEN}`;
   const entries = Array.from(formData.entries());
-  const portfolioFile = entries.find(([, value]) => isFileLike(value))?.[1] || null;
+  const portfolioFile =
+    entries.find(([, value]) => isFileLike(value))?.[1] || null;
 
   // Convert FormData -> plain object for JSON payload.
   const obj = {};
@@ -205,7 +245,9 @@ export async function submitApplication(formData) {
   const jobPostingId = String(obj.job_posting || "").trim();
 
   if (!obj.current_stage || String(obj.current_stage).trim() === "applied") {
-    const initialStage = jobPostingId ? await getInitialJobStage(jobPostingId) : null;
+    const initialStage = jobPostingId
+      ? await getInitialJobStage(jobPostingId)
+      : null;
 
     if (initialStage) {
       obj.current_stage = initialStage;
@@ -244,22 +286,28 @@ export async function submitApplication(formData) {
 
   if (portfolioFile) {
     const assetUploadForm = new FormData();
-    const fileName = String(portfolioFile.name || "portfolio").trim() || "portfolio";
+    const fileName =
+      String(portfolioFile.name || "portfolio").trim() || "portfolio";
     assetUploadForm.append("files[]", portfolioFile, fileName);
 
     let assetUploadRes;
     try {
-      assetUploadRes = await fetch(`${BASE_URL}cockpit/addAssets?token=${TOKEN}`, {
-        method: "POST",
-        body: assetUploadForm,
-      });
+      assetUploadRes = await fetch(
+        `${BASE_URL}cockpit/addAssets?token=${TOKEN}`,
+        {
+          method: "POST",
+          body: assetUploadForm,
+        },
+      );
     } catch (err) {
       throw err;
     }
 
     if (!assetUploadRes.ok) {
       const text = await assetUploadRes.text();
-      throw new Error(`Gagal upload portofolio: ${assetUploadRes.status} ${text}`);
+      throw new Error(
+        `Gagal upload portofolio: ${assetUploadRes.status} ${text}`,
+      );
     }
 
     let assetUploadJson = null;
@@ -267,7 +315,9 @@ export async function submitApplication(formData) {
       assetUploadJson = await assetUploadRes.json();
     } catch (err) {
       const text = await assetUploadRes.text().catch(() => "<no-text>");
-      throw new Error("Invalid JSON from asset upload: " + String(err.message || err));
+      throw new Error(
+        "Invalid JSON from asset upload: " + String(err.message || err),
+      );
     }
 
     const uploadedAssetPath = getUploadedAssetPath(assetUploadJson);
@@ -308,7 +358,10 @@ export async function getCities(provId = "") {
   // Fetch all cities from Cockpit and filter locally by prov_id.
   // This avoids depending on Cockpit's filter query format which may differ.
   const url = collectionGetUrl("m_city");
-  console.log("service.getCities -> fetching cities, provId:", provId || "(none)");
+  console.log(
+    "service.getCities -> fetching cities, provId:",
+    provId || "(none)",
+  );
   const data = await fetchJson(url);
   const entries = data.entries || [];
   console.log("service.getCities -> fetched entries:", entries.length);

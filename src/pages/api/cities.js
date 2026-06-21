@@ -44,17 +44,32 @@ export async function GET({ request }) {
     const provId = url.searchParams.get("prov_id");
     const returnAll = url.searchParams.get("all") === "1";
 
-    console.log("api/cities GET -> url:", request.url, "prov_id:", provId, "returnAll:", returnAll);
+    console.log(
+      "api/cities GET -> url:",
+      request.url,
+      "prov_id:",
+      provId,
+      "returnAll:",
+      returnAll,
+    );
 
     const data = await fetchCitiesFromCockpit();
     const allEntries = data.entries || [];
 
     if (returnAll) {
-      console.log("api/cities -> returnAll fetched:", allEntries.length, "sample prov_ids:", allEntries.slice(0,20).map(e=>e.prov_id));
-      return new Response(JSON.stringify({ ok: true, entries: data.entries || [] }), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      });
+      console.log(
+        "api/cities -> returnAll fetched:",
+        allEntries.length,
+        "sample prov_ids:",
+        allEntries.slice(0, 20).map((e) => e.prov_id),
+      );
+      return new Response(
+        JSON.stringify({ ok: true, entries: data.entries || [] }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
     }
 
     if (!provId) {
@@ -68,10 +83,22 @@ export async function GET({ request }) {
     const provIdNum = Number(provId);
     const entries = allEntries.filter((e) => Number(e.prov_id) === provIdNum);
 
-    console.log("api/cities -> fetched allEntries:", allEntries.length, "filtered (prov_id=", provId, ") ->", entries.length);
+    console.log(
+      "api/cities -> fetched allEntries:",
+      allEntries.length,
+      "filtered (prov_id=",
+      provId,
+      ") ->",
+      entries.length,
+    );
     try {
-      const sampleProvIds = Array.from(new Set(allEntries.slice(0,50).map(e=>String(e.prov_id))));
-      console.log("api/cities -> sample prov_id values in allEntries:", sampleProvIds.slice(0,20));
+      const sampleProvIds = Array.from(
+        new Set(allEntries.slice(0, 50).map((e) => String(e.prov_id))),
+      );
+      console.log(
+        "api/cities -> sample prov_id values in allEntries:",
+        sampleProvIds.slice(0, 20),
+      );
     } catch (e) {
       /* ignore */
     }
@@ -87,4 +114,3 @@ export async function GET({ request }) {
     });
   }
 }
- 

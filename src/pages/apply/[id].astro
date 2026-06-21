@@ -170,7 +170,10 @@ const cities = (cityResponse && cityResponse.entries) || [];
           return "Portofolio hanya boleh berupa file PDF.";
         }
 
-        if (typeof file.size === "number" && file.size > portfolioMaxSizeBytes) {
+        if (
+          typeof file.size === "number" &&
+          file.size > portfolioMaxSizeBytes
+        ) {
           return "Ukuran file portofolio maksimal 5 MB.";
         }
 

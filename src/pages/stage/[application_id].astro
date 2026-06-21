@@ -3,7 +3,7 @@ import MainLayout from "../../layouts/mainlayout.astro";
 import { getJobById } from "../../services/jobService";
 import {
   getApplicationById,
-  getJobStagesByJobPosting,
+  getAllJobStagesByJobPosting,
 } from "../../services/applicationService";
 import { Check, Lock, Users } from "lucide-astro";
 
@@ -24,7 +24,7 @@ const jobPostingId = String(
 
 const job = jobPostingId ? await getJobById(jobPostingId) : null;
 const rawStages = jobPostingId
-  ? await getJobStagesByJobPosting(jobPostingId)
+  ? await getAllJobStagesByJobPosting(jobPostingId)
   : [];
 const stages = Array.isArray(rawStages) ? rawStages : [];
 const appliedJobTitle = String(
@@ -208,9 +208,25 @@ const currentStageId = normalizeStageId(currentStageRef);
 const currentStageOrder = normalizeStageOrder(currentStageRef);
 const currentStageName = normalizeStageTitle(currentStageRef);
 const currentStageStatus = normalizeStageStatus(currentStageRef);
+const HIRE_STAGE_PATTERN =
+  /(^|\b)(hire|hired|accepted|accepted_offer|offer_accepted|diterima)(\b|$)/i;
+const applicationStatus = String(
+  application?.status ??
+    application?.application_status ??
+    application?.journey_status ??
+    application?.decision_status ??
+    "",
+)
+  .trim()
+  .toLowerCase();
 const isRejectedJourney =
   isRejectStage(currentStageRef) ||
-  REJECT_STAGE_PATTERN.test(currentStageStatus);
+  REJECT_STAGE_PATTERN.test(currentStageStatus) ||
+  REJECT_STAGE_PATTERN.test(applicationStatus);
+const isHireJourney =
+  HIRE_STAGE_PATTERN.test(applicationStatus) ||
+  HIRE_STAGE_PATTERN.test(currentStageStatus) ||
+  HIRE_STAGE_PATTERN.test(currentStageName);
 
 const stageEntries = stages
   .map((stage, originalIndex) => ({
@@ -218,11 +234,14 @@ const stageEntries = stages
     originalIndex,
     activeInfo: getStageActiveInfo(stage),
   }))
-  .filter(({ stage }) => !isRejectStage(stage));
+  .filter(({ stage }) =>
+    isRejectedJourney ? isRejectStage(stage) : !isRejectStage(stage),
+  );
 
-const shouldFilterActive = stageEntries.some(
-  ({ activeInfo }) => activeInfo.hasIndicator,
-);
+const shouldFilterActive =
+  !isRejectedJourney &&
+  !isHireJourney &&
+  stageEntries.some(({ activeInfo }) => activeInfo.hasIndicator);
 const visibleStageEntries = shouldFilterActive
   ? stageEntries.filter(({ activeInfo }) => activeInfo.isActive)
   : stageEntries;
@@ -264,21 +283,25 @@ const currentStageItem =
 const currentStageLabel = currentStageItem
   ? isRejectedJourney
     ? ""
-    : pickStageTitle(currentStageItem, currentStageIndex)
+    : isHireJourney
+      ? "Accepted"
+      : pickStageTitle(currentStageItem, currentStageIndex)
   : currentStageName && !currentStageId
     ? isRejectedJourney
       ? ""
-      : currentStageName
+      : isHireJourney
+        ? "Accepted"
+        : currentStageName
     : "";
 
 const detectStatus = (stage: any, index: number, originalIndex: number) => {
   if (isRejectedJourney) {
-    if (rejectStageOriginalIndex >= 0 && rejectedActiveOriginalIndex >= 0) {
-      if (originalIndex < rejectedActiveOriginalIndex) return "completed";
-      if (originalIndex === rejectedActiveOriginalIndex) return "active";
-      return "locked";
-    }
+    if (index < visibleStages.length - 1) return "completed";
+    if (index === visibleStages.length - 1) return "active";
+    return "locked";
+  }
 
+  if (isHireJourney) {
     if (index < visibleStages.length - 1) return "completed";
     if (index === visibleStages.length - 1) return "active";
     return "locked";
@@ -315,27 +338,32 @@ const stageItems = visibleStageEntries.map(
       status === "completed"
         ? "Completed"
         : status === "active"
-          ? "In progress"
+          ? isHireJourney
+            ? "Accepted"
+            : "In process"
           : "Locked";
 
     const isRejectedActiveCard = isRejectedJourney && status === "active";
+    const isHireActiveCard = isHireJourney && status === "active";
+    const displayTitle = pickStageTitle(stage, index);
     const descriptionText =
       status === "completed"
         ? "tahapan ini telah anda lewati"
         : isRejectedActiveCard
-          ? "mohon maaf ditahapan ini anda belum lolos"
+          ? "mohon maaf lamaran anda belum lolos"
           : pickStageDesc(stage) ||
             "Tahapan ini akan diinformasikan lebih lanjut oleh tim rekrutmen.";
 
     return {
       id: stage?._id || `stage-${originalIndex + 1}`,
       order: stage?.stage_order ?? originalIndex + 1,
-      title: pickStageTitle(stage, index),
+      title: displayTitle,
       description: descriptionText,
       meta: pickStageMeta(stage),
       status,
       statusLabel,
       isRejectedActiveCard,
+      isHireActiveCard,
     };
   },
 );
@@ -343,9 +371,7 @@ const stageItems = visibleStageEntries.map(
 
 <MainLayout title="Application Journey">
   <!-- ================= HEADER ================= -->
-  <section
-    class="stage-hero bg-gradient-to-r from-blue-500 to-blue-400 h-[90px]"
-  >
+  <section class="stage-hero bg-linear-to-r from-blue-500 to-blue-400 h-22.5">
   </section>
 
   <!-- ================= CONTENT ================= -->
@@ -407,32 +433,46 @@ const stageItems = visibleStageEntries.map(
               const isCompleted = stage.status === "completed";
               const isActive = stage.status === "active";
               const isRejectedActiveCard = stage.isRejectedActiveCard;
-              const Icon = isCompleted ? Check : isActive ? Users : Lock;
+              const isHireActiveCard = stage.isHireActiveCard;
+              const Icon =
+                isCompleted || isHireActiveCard
+                  ? Check
+                  : isActive
+                    ? Users
+                    : Lock;
               const dotClass = isCompleted
                 ? "bg-emerald-500"
                 : isActive
                   ? isRejectedActiveCard
                     ? "bg-red-600"
-                    : "bg-blue-600"
+                    : isHireActiveCard
+                      ? "bg-emerald-600"
+                      : "bg-blue-600"
                   : "bg-slate-300";
               const cardClass = isCompleted
                 ? "border-slate-200 bg-white"
                 : isActive
                   ? isRejectedActiveCard
                     ? "border-red-300 bg-red-50 shadow-md"
-                    : "border-blue-300 bg-white shadow-md"
+                    : isHireActiveCard
+                      ? "border-emerald-300 bg-emerald-50 shadow-md"
+                      : "border-blue-300 bg-white shadow-md"
                   : "border-slate-200 bg-slate-50";
               const descClass = isCompleted
                 ? "text-slate-500"
                 : isActive
                   ? isRejectedActiveCard
                     ? "text-red-700 font-semibold"
-                    : "text-blue-600"
+                    : isHireActiveCard
+                      ? "text-emerald-700"
+                      : "text-blue-600"
                   : "text-slate-400";
               const titleClass = isActive
                 ? isRejectedActiveCard
                   ? "text-red-800"
-                  : "text-blue-700"
+                  : isHireActiveCard
+                    ? "text-emerald-800"
+                    : "text-blue-700"
                 : "text-slate-900";
               const badgeContent = stage.meta || "";
 
@@ -475,7 +515,11 @@ const stageItems = visibleStageEntries.map(
                         ) : isActive ? (
                           isRejectedActiveCard ? (
                             <span class="inline-flex items-center rounded-full bg-red-100 px-3 py-1 text-[11px] font-semibold text-red-700">
-                              Ditolak
+                              Rejected
+                            </span>
+                          ) : isHireActiveCard ? (
+                            <span class="inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-[11px] font-semibold text-emerald-700">
+                              Accepted
                             </span>
                           ) : (
                             <div>
@@ -483,7 +527,7 @@ const stageItems = visibleStageEntries.map(
                                 Est. Completion
                               </p>
                               <p class="mt-1 text-xs font-semibold text-slate-600">
-                                {badgeContent || "In progress"}
+                                {badgeContent || "In process"}
                               </p>
                             </div>
                           )

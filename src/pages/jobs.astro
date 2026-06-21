@@ -110,8 +110,8 @@ const jobs = ((response?.entries ?? []) as JobPosting[]).filter(
               Paste Application ID to Start Tracking
             </h3>
             <p class="mt-2 text-sm text-slate-500">
-              Enter the application ID you received so the stage application
-              can be opened from here.
+              Enter the application ID you received so the stage application can
+              be opened from here.
             </p>
           </div>
 
@@ -257,7 +257,9 @@ const jobs = ((response?.entries ?? []) as JobPosting[]).filter(
       const applicationId = normalizeApplicationId(urlInputElement.value);
 
       if (!applicationId) {
-        urlInputElement.setCustomValidity("Masukkan application ID yang valid.");
+        urlInputElement.setCustomValidity(
+          "Masukkan application ID yang valid.",
+        );
         urlInputElement.reportValidity();
         return;
       }
@@ -281,7 +283,9 @@ const jobs = ((response?.entries ?? []) as JobPosting[]).filter(
 
     if (!singleRevealItems.length && !group) return;
 
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
     if (reduceMotion || !("IntersectionObserver" in window)) {
       singleRevealItems.forEach((item) => item.classList.add("is-visible"));
       items.forEach((item) => item.classList.add("is-visible"));

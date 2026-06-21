@@ -9,10 +9,13 @@ export async function POST({ request }) {
     const answers = Array.isArray(body.answers) ? body.answers : [];
 
     if (!applicationId) {
-      return new Response(JSON.stringify({ ok: false, error: "application_id is required" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ ok: false, error: "application_id is required" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
     }
 
     if (answers.length === 0) {
@@ -36,9 +39,15 @@ export async function POST({ request }) {
       };
     });
 
-    console.log("[submit-answers] entriesToSave:", JSON.stringify(entriesToSave, null, 2));
+    console.log(
+      "[submit-answers] entriesToSave:",
+      JSON.stringify(entriesToSave, null, 2),
+    );
     const results = await saveAnswerEntries(entriesToSave);
-    console.log("[submit-answers] save results:", JSON.stringify(results, null, 2));
+    console.log(
+      "[submit-answers] save results:",
+      JSON.stringify(results, null, 2),
+    );
 
     // determine overall success if at least one saved ok
     const allOk = results.every((r) => r.ok === true);
