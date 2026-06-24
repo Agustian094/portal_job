@@ -95,6 +95,7 @@ const cities = (cityResponse && cityResponse.entries) || [];
       const portfolioPreviewRemove = document.getElementById(
         "portfolio-preview-remove",
       );
+      const portfolioError = document.getElementById("portfolio-error");
       const jobIdInput = form.querySelector('input[name="job_id"]');
 
       function findSelectByLabel(text) {
@@ -239,12 +240,19 @@ const cities = (cityResponse && cityResponse.entries) || [];
 
           if (validationError) {
             portfolioInput.setCustomValidity(validationError);
-            portfolioInput.reportValidity();
             clearPortfolioSelection();
+            if (portfolioError) {
+              portfolioError.textContent = validationError;
+              portfolioError.classList.remove("hidden");
+            }
             return;
           }
 
           portfolioInput.setCustomValidity("");
+          if (portfolioError) {
+            portfolioError.textContent = "";
+            portfolioError.classList.add("hidden");
+          }
           updatePortfolioPreview(file);
         });
       }
@@ -362,6 +370,8 @@ const cities = (cityResponse && cityResponse.entries) || [];
 
         // Validate required fields
         const validationErrors = [];
+        
+        console.log("Form submitted, portfolio input:", portfolioInput);
 
         if (!nameInput?.value || !String(nameInput.value).trim()) {
           validationErrors.push("Full Name is required");
@@ -406,6 +416,33 @@ const cities = (cityResponse && cityResponse.entries) || [];
           educationSelect?.setCustomValidity("");
         }
 
+        const portfolioFile = portfolioInput?.files?.[0] || null;
+        console.log("Portfolio file check:", portfolioFile, "Files:", portfolioInput?.files);
+        if (!portfolioFile) {
+          console.log("Portfolio validation failed - showing alert/ui error");
+          window.portalNotify("Portfolio is required", {
+            variant: "warning",
+            title: "Portfolio required",
+          });
+          if (portfolioInput) {
+            portfolioInput.setCustomValidity("Portfolio is required");
+          }
+          if (portfolioError) {
+            portfolioError.textContent = "Portfolio is required";
+            portfolioError.classList.remove("hidden");
+          }
+          if (submitBtn) submitBtn.disabled = false;
+          return;
+        } else {
+          if (portfolioInput) {
+            portfolioInput.setCustomValidity("");
+          }
+          if (portfolioError) {
+            portfolioError.textContent = "";
+            portfolioError.classList.add("hidden");
+          }
+        }
+
         if (!provinceSelect?.value) {
           provinceSelect.setCustomValidity(
             "Silakan pilih province terlebih dahulu",
@@ -425,9 +462,14 @@ const cities = (cityResponse && cityResponse.entries) || [];
         }
 
         if (validationErrors.length > 0) {
-          alert(
+          window.portalNotify(
             "Please fill in all required fields:\n" +
               validationErrors.join("\n"),
+            {
+              variant: "warning",
+              title: "Form incomplete",
+              timeout: 6000,
+            },
           );
           if (submitBtn) submitBtn.disabled = false;
           return;
@@ -478,7 +520,10 @@ const cities = (cityResponse && cityResponse.entries) || [];
           });
           const json = await resp.json();
           if (resp.ok && json.ok) {
-            alert("Application submitted successfully");
+            window.portalNotify("Your application was submitted successfully.", {
+              variant: "success",
+              title: "Application sent",
+            });
             // Redirect to question page
             const jobId = jobIdInput.value;
             const applicationId =
@@ -498,7 +543,14 @@ const cities = (cityResponse && cityResponse.entries) || [];
           }
         } catch (err) {
           console.error(err);
-          alert("Failed to submit application: " + err.message);
+          window.portalNotify(
+            "Failed to submit application: " + (err.message || err),
+            {
+              variant: "error",
+              title: "Submission failed",
+              timeout: 6500,
+            },
+          );
         } finally {
           if (submitBtn) submitBtn.disabled = false;
         }
@@ -769,6 +821,8 @@ const cities = (cityResponse && cityResponse.entries) || [];
                 PDF (max 5MB)
               </div>
             </label>
+
+            <p id="portfolio-error" class="text-sm text-red-600 mt-2 hidden">Portfolio is required</p>
 
             <div
               id="portfolio-preview"

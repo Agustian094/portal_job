@@ -13,6 +13,14 @@ interface JobEntry {
   requirement: string;
 }
 
+const capitalizeFirst = (value: unknown) => {
+  const text = String(value || "").trim();
+
+  if (!text) return "";
+
+  return text.charAt(0).toUpperCase() + text.slice(1);
+};
+
 export async function getStaticPaths() {
   try {
     const response = await getJobs();
@@ -43,7 +51,7 @@ if (!job) {
 
 <MainLayout title="Job Detail">
   <!-- ================= HEADER (BIRU) ================= -->
-  <section class="bg-gradient-to-r from-blue-500 to-blue-400 h-[50px]">
+  <section class="bg-linear-to-r from-blue-500 to-blue-400 h-12.5">
   </section>
 
   <!-- ================= CARD (OVERLAP) ================= -->
@@ -64,7 +72,7 @@ if (!job) {
         <div class="space-y-2">
           <!-- Title -->
           <h1 class="text-2xl md:text-3xl font-bold text-gray-800">
-            {job.title}
+            {capitalizeFirst(job.title)}
           </h1>
 
           <!-- Meta Info -->
@@ -81,7 +89,7 @@ if (!job) {
 
             <div class="flex items-center gap-2">
               <Clock class="w-4 h-4" />
-              <span>{job.slug}</span>
+              <span>{capitalizeFirst(job.slug)}</span>
             </div>
           </div>
         </div>
@@ -110,7 +118,7 @@ if (!job) {
           <div>
             <p class="text-sm text-gray-500">Work Type</p>
             <p class="font-semibold text-gray-800">
-              {job.summary}
+              {capitalizeFirst(job.summary)}
             </p>
           </div>
         </div>
@@ -125,7 +133,7 @@ if (!job) {
 
         <!-- Description -->
         <p class="text-gray-600 leading-relaxed">
-          {job.description}
+          {capitalizeFirst(job.description)}
         </p>
 
         <div class="mt-6"></div>
@@ -135,7 +143,9 @@ if (!job) {
 
         <!-- Requirement List -->
         <ul class="list-disc list-inside text-gray-600 space-y-2">
-          {job.requirement.split(",").map((item) => <li>{item}</li>)}
+          {job.requirement
+            .split(",")
+            .map((item) => <li>{capitalizeFirst(item)}</li>)}
         </ul>
       </div>
     </div>

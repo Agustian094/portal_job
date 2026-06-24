@@ -8,6 +8,8 @@ const { title = "Job Portal" } = Astro.props;
 
 <html>
   <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title}</title>
   </head>
 
@@ -82,6 +84,149 @@ const { title = "Job Portal" } = Astro.props;
 
         // Initialize state (e.g. when landing mid-page)
         update();
+      })();
+    </script>
+
+    <script>
+      (() => {
+        const DEFAULT_TIMEOUT = 4200;
+        const VARIANT_META = {
+          info: {
+            title: "Info",
+            className: "portal-toast--info",
+            icon: `
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 2a10 10 0 1 0 10 10A10.01 10.01 0 0 0 12 2Zm0 4a1.25 1.25 0 1 1-1.25 1.25A1.25 1.25 0 0 1 12 6Zm1.5 12h-3a1 1 0 0 1 0-2h1V11h-1a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v6h1a1 1 0 0 1 0 2Z" />
+              </svg>
+            `,
+          },
+          success: {
+            title: "Success",
+            className: "portal-toast--success",
+            icon: `
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 2a10 10 0 1 0 10 10A10.01 10.01 0 0 0 12 2Zm4.71 7.71-5 5a1 1 0 0 1-1.41 0l-2-2a1 1 0 1 1 1.41-1.41l1.29 1.29 4.29-4.29a1 1 0 0 1 1.42 1.41Z" />
+              </svg>
+            `,
+          },
+          warning: {
+            title: "Attention",
+            className: "portal-toast--warning",
+            icon: `
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 2.25a2 2 0 0 1 1.74 1.01l8.39 14.94A2 2 0 0 1 20.39 21H3.61a2 2 0 0 1-1.74-2.8L10.26 3.26A2 2 0 0 1 12 2.25Zm0 5.25a1 1 0 0 0-1 1v5.25a1 1 0 1 0 2 0V8.5a1 1 0 0 0-1-1Zm0 10.5a1.25 1.25 0 1 0 0-2.5 1.25 1.25 0 0 0 0 2.5Z" />
+              </svg>
+            `,
+          },
+          error: {
+            title: "Something went wrong",
+            className: "portal-toast--error",
+            icon: `
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 2a10 10 0 1 0 10 10A10.01 10.01 0 0 0 12 2Zm3.71 13.29a1 1 0 0 1-1.41 1.41L12 13.41l-2.29 2.29a1 1 0 0 1-1.41-1.41L10.59 12 8.3 9.71A1 1 0 0 1 9.71 8.3L12 10.59l2.29-2.29a1 1 0 0 1 1.41 1.41L13.41 12Z" />
+              </svg>
+            `,
+          },
+        };
+
+        const ensureRoot = () => {
+          let root = document.querySelector(
+            "[data-portal-toast-root]",
+          ) as HTMLElement | null;
+          if (root) return root;
+
+          root = document.createElement("div") as HTMLElement;
+          root.dataset.portalToastRoot = "true";
+          root.className = "portal-toast-root";
+          root.setAttribute("aria-live", "polite");
+          root.setAttribute("aria-atomic", "true");
+          document.body.appendChild(root);
+          return root;
+        };
+
+        const closeToast = (toast) => {
+          if (!toast || toast.dataset.closing === "true") return;
+          toast.dataset.closing = "true";
+          toast.classList.remove("is-visible");
+          window.setTimeout(() => {
+            toast.remove();
+          }, 220);
+        };
+
+        type PortalNotifyOptions = {
+          variant?: keyof typeof VARIANT_META;
+          timeout?: number;
+          title?: string;
+        };
+
+        type PortalNotifyFn = (
+          message: string,
+          options?: PortalNotifyOptions,
+        ) => () => void;
+
+        const portalWindow = window as typeof window & {
+          portalNotify?: PortalNotifyFn;
+        };
+
+        portalWindow.portalNotify = (
+          message,
+          options: PortalNotifyOptions = {},
+        ) => {
+          const variant = options.variant || "info";
+          const meta = VARIANT_META[variant] || VARIANT_META.info;
+          const timeout =
+            typeof options.timeout === "number"
+              ? options.timeout
+              : DEFAULT_TIMEOUT;
+          const title = options.title || meta.title;
+
+          const root = ensureRoot();
+          const toast = document.createElement("article");
+          toast.className = `portal-toast ${meta.className}`;
+          toast.setAttribute("role", "status");
+
+          const iconWrap = document.createElement("div");
+          iconWrap.className = "portal-toast__icon";
+          iconWrap.innerHTML = meta.icon;
+
+          const content = document.createElement("div");
+          content.className = "portal-toast__content";
+
+          const titleEl = document.createElement("p");
+          titleEl.className = "portal-toast__title";
+          titleEl.textContent = title;
+
+          const messageEl = document.createElement("p");
+          messageEl.className = "portal-toast__message";
+          messageEl.textContent = String(message || "");
+
+          content.append(titleEl, messageEl);
+
+          const closeButton = document.createElement("button");
+          closeButton.type = "button";
+          closeButton.className = "portal-toast__close";
+          closeButton.setAttribute("aria-label", "Dismiss notification");
+          closeButton.textContent = "×";
+          closeButton.addEventListener("click", () => closeToast(toast));
+
+          toast.append(iconWrap, content, closeButton);
+          root.appendChild(toast);
+
+          window.requestAnimationFrame(() => {
+            toast.classList.add("is-visible");
+          });
+
+          if (timeout > 0) {
+            const timer = window.setTimeout(() => closeToast(toast), timeout);
+            toast.addEventListener(
+              "mouseenter",
+              () => window.clearTimeout(timer),
+              { once: true },
+            );
+          }
+
+          return () => closeToast(toast);
+        };
       })();
     </script>
   </body>

@@ -2,6 +2,12 @@ import { submitApplication } from "../../services/applicationService";
 
 export const prerender = false;
 
+function capitalizeFirst(value) {
+  const text = String(value || "").trim();
+  if (!text) return "";
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
 export async function POST({ request }) {
   try {
     const formData = await request.formData();
@@ -15,6 +21,11 @@ export async function POST({ request }) {
     }
     if (!formData.get("stage_notes")) {
       formData.set("stage_notes", "");
+    }
+
+    const candidateName = formData.get("candidate_name");
+    if (typeof candidateName === "string" && candidateName.trim()) {
+      formData.set("candidate_name", capitalizeFirst(candidateName));
     }
 
     const result = await submitApplication(formData);

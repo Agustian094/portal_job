@@ -23,15 +23,20 @@ import Hero from "../components/hero.astro";
       <div data-reveal data-reveal-delay="80">
         <h2 class="text-3xl font-bold text-gray-800 mb-4">Our Story</h2>
 
-        <p class="text-gray-600 mb-4 leading-relaxed">
-          Lorem ipsum dolor sit amet consectetur. Nibh est ullamcorper leo
-          interdum. Justo eu arcu vitae nascetur.
+        <p class="text-gray-600 mb-4 leading-relaxed text-justify">
+          The Global Technology Team is an outsourcing company specializing
+          in design and technology services. With a focus on innovation, quality, 
+          and strong collaboration, we provide the best service and support digital 
+          transformation for our partners, ready to provide leading-edge solutions to meet 
+          your business needs and goals. The Global Engineering Team also aims to provide 
+          professional workforce to increase your business capacity. As time goes by, we continue 
+          to move to meet the needs of Information Technology and Design businesses in Indonesia. 
+          Therefore, we at the Global Engineering Team meet the needs of Design and Technology 
+          businesses in Indonesia. Therefore, we provide broad coverage; provide professional 
+          workforce; provide the best and most professional work quality; and affordable costs.
         </p>
 
-        <p class="text-gray-600 leading-relaxed">
-          Risus ullamcorper risus nunc aliquet aliquet mi. Pretium in viverra
-          lacus dignissim non at congue amet.
-        </p>
+
       </div>
 
       <!-- Image -->
@@ -161,7 +166,6 @@ import Hero from "../components/hero.astro";
               );
               const stagger = 120;
               members.forEach((m, idx) => {
-                // set transition delay so CSS transition staggers too
                 m.style.transitionDelay = `${idx * stagger}ms`;
                 setTimeout(() => m.classList.add("is-visible"), idx * stagger);
               });

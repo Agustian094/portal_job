@@ -302,8 +302,12 @@ function parseOptions(optString: string | undefined): string[] {
 
         const applicationId = appIdInput ? appIdInput.value.trim() : "";
         if (!applicationId) {
-          alert(
+          window.portalNotify(
             "Application ID tidak ditemukan. Silakan submit ulang dari halaman Apply.",
+            {
+              variant: "error",
+              title: "Application missing",
+            },
           );
           if (submitBtn) submitBtn.disabled = false;
           return;
@@ -424,9 +428,14 @@ function parseOptions(optString: string | undefined): string[] {
               });
             }
           }
-          alert(
+          window.portalNotify(
             "Semua pertanyaan wajib diisi. Pertanyaan yang belum dijawab:\n" +
               validationErrors.join("\n"),
+            {
+              variant: "warning",
+              title: "Jawaban belum lengkap",
+              timeout: 6500,
+            },
           );
           if (submitBtn) submitBtn.disabled = false;
           return;
@@ -443,7 +452,10 @@ function parseOptions(optString: string | undefined): string[] {
           console.log("[submit-answers] server response", resp.status, json);
 
           if (resp.ok && json.ok) {
-            alert("Answers submitted successfully");
+            window.portalNotify("Answers submitted successfully", {
+              variant: "success",
+              title: "Response saved",
+            });
             const currentPathParts = window.location.pathname
               .split("/")
               .filter(Boolean);
@@ -467,11 +479,19 @@ function parseOptions(optString: string | undefined): string[] {
             } else if (json && json.error) {
               msg += "\n" + json.error;
             }
-            alert(msg);
+            window.portalNotify(msg, {
+              variant: "error",
+              title: "Could not save answers",
+              timeout: 7000,
+            });
           }
         } catch (err) {
           console.error(err);
-          alert("Error submitting answers: " + (err.message || err));
+          window.portalNotify("Error submitting answers: " + (err.message || err), {
+            variant: "error",
+            title: "Request failed",
+            timeout: 7000,
+          });
         } finally {
           if (submitBtn) submitBtn.disabled = false;
         }

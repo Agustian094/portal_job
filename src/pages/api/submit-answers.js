@@ -2,6 +2,12 @@ import { saveAnswerEntries } from "../../services/answerService";
 
 export const prerender = false;
 
+function capitalizeFirst(value) {
+  const text = String(value || "").trim();
+  if (!text) return "";
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
 export async function POST({ request }) {
   try {
     const body = await request.json();
@@ -29,7 +35,7 @@ export async function POST({ request }) {
     const entriesToSave = answers.map((a) => {
       const qid = String(a.question_id || "").trim();
       const qname = String(a.question_name || "").trim();
-      const aval = a.answer_value == null ? "" : String(a.answer_value);
+      const aval = a.answer_value == null ? "" : capitalizeFirst(a.answer_value);
 
       return {
         apllication_id: { _id: applicationId, link: "t_application" },

@@ -3,11 +3,19 @@ import { Briefcase, Clock, MapPin } from "lucide-astro";
 
 const { id, title, slug, summary, description } = Astro.props;
 
+const capitalizeFirst = (value) => {
+  const text = String(value || "").trim();
+
+  if (!text) return "";
+
+  return text.charAt(0).toUpperCase() + text.slice(1);
+};
+
 // Truncate long descriptions for display in the card
 const maxLen = 80;
 const shortDescription =
   description && description.length > maxLen
-    ? description.slice(0, maxLen).trimEnd() + "..."
+    ? capitalizeFirst(description.slice(0, maxLen).trimEnd()) + "..."
     : description;
 ---
 
@@ -30,12 +38,12 @@ const shortDescription =
     <div class="space-y-3">
       <!-- JOB TITLE -->
       <h2 class="text-lg font-semibold text-gray-800">
-        {title || "No Title"}
+        {capitalizeFirst(title) || "No Title"}
       </h2>
 
       <!-- description -->
       <p class="text-sm text-gray-500">
-        {shortDescription || "No description available"}
+        {capitalizeFirst(shortDescription) || "No description available"}
       </p>
 
       <!-- META INFO -->
@@ -43,19 +51,18 @@ const shortDescription =
         <!-- summary -->
         <span class="flex items-center gap-1">
           <Briefcase class="w-4 h-4" />
-          {summary || "No summary available"}
+          {capitalizeFirst(summary) || "No summary available"}
         </span>
 
-        <!-- TYPE (pakai slug sebagai pengganti) -->
         <span class="flex items-center gap-1">
           <Clock class="w-4 h-4" />
-          {slug || "No type"}
+          {capitalizeFirst(slug) || "No type"}
         </span>
 
         <!-- LOCATION (dummy karena tidak ada field) -->
         <span class="flex items-center gap-1">
           <MapPin class="w-4 h-4" />
-          surabaya
+          Surabaya
         </span>
       </div>
     </div>
