@@ -1,15 +1,6 @@
 ---
 import MainLayout from "../layouts/mainlayout.astro";
-import {
-  MapPin,
-  Phone,
-  Mail,
-  Clock3,
-  Linkedin,
-  Twitter,
-  Facebook,
-  Instagram,
-} from "lucide-astro";
+import { MapPin, Phone, Mail, Clock3, Linkedin, Instagram } from "lucide-astro";
 ---
 
 <MainLayout title="Contact">
@@ -36,7 +27,7 @@ import {
           Send us a Message
         </h2>
 
-        <form class="space-y-6">
+        <form id="contactForm" class="space-y-6">
           <!-- FULL NAME -->
           <div data-reveal data-reveal-delay="120">
             <label class="block text-[15px] font-semibold text-gray-700 mb-3">
@@ -45,7 +36,9 @@ import {
 
             <input
               type="text"
+              name="name"
               placeholder="John"
+              required
               class="w-full h-14.5 rounded-[14px] border border-[#D9E0EA] bg-white px-5 text-[16px] text-gray-800 outline-none transition-all duration-300 focus:border-[#4285F4] focus:ring-4 focus:ring-blue-100"
             />
           </div>
@@ -58,7 +51,9 @@ import {
 
             <input
               type="email"
+              name="email"
               placeholder="john.doe@example.com"
+              required
               class="w-full h-14.5 rounded-[14px] border border-[#D9E0EA] bg-white px-5 text-[16px] text-gray-800 outline-none transition-all duration-300 focus:border-[#4285F4] focus:ring-4 focus:ring-blue-100"
             />
           </div>
@@ -71,6 +66,7 @@ import {
 
             <input
               type="text"
+              name="phone"
               placeholder="+62 812-3456-7890"
               class="w-full h-14.5 rounded-[14px] border border-[#D9E0EA] bg-white px-5 text-[16px] text-gray-800 outline-none transition-all duration-300 focus:border-[#4285F4] focus:ring-4 focus:ring-blue-100"
             />
@@ -84,7 +80,9 @@ import {
 
             <input
               type="text"
+              name="subject"
               placeholder="Your subject"
+              required
               class="w-full h-14.5 rounded-[14px] border border-[#D9E0EA] bg-white px-5 text-[16px] text-gray-800 outline-none transition-all duration-300 focus:border-[#4285F4] focus:ring-4 focus:ring-blue-100"
             />
           </div>
@@ -96,7 +94,9 @@ import {
             </label>
 
             <textarea
+              name="message"
               rows="6"
+              required
               placeholder="Tell us how we can help you..."
               class="w-full rounded-[14px] border border-[#D9E0EA] bg-white px-5 py-4 text-[16px] text-gray-800 outline-none resize-none transition-all duration-300 focus:border-[#4285F4] focus:ring-4 focus:ring-blue-100"
             ></textarea>
@@ -294,5 +294,41 @@ import {
 
       items.forEach((i) => obs.observe(i));
     })();
+
+    // Send
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.getElementById("contactForm");
+
+      form?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const data = new FormData(form);
+
+        const payload = {
+          name: data.get("name"),
+          email: data.get("email"),
+          phone: data.get("phone"),
+          subject: data.get("subject"),
+          message: data.get("message"),
+        };
+
+        const response = await fetch("/api/contact", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          alert("Email berhasil dikirim");
+          form.reset();
+        } else {
+          alert("Gagal mengirim email");
+        }
+      });
+    });
   </script>
 </MainLayout>
